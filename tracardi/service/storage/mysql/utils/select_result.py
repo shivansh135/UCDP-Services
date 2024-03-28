@@ -1,4 +1,4 @@
-from typing import Callable, Optional, List, Generator, TypeVar
+from typing import Callable, Optional, List, Generator, TypeVar, Any
 
 from tracardi.domain.named_entity import NamedEntity
 from tracardi.service.storage.mysql.schema.table import Base
