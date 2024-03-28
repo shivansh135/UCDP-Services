@@ -1,5 +1,5 @@
 import logging
-from typing import Tuple, Optional
+from typing import Tuple, Optional, List
 
 from tracardi.config import tracardi
 from tracardi.domain.event_type_metadata import EventTypeMetadata
@@ -41,6 +41,24 @@ class EventMappingService(TableService):
             where = where_tenant_and_mode_context(
                 EventMappingTable,
                 EventMappingTable.event_type == event_type
+            )
+
+        return await self._select_in_deployment_mode(EventMappingTable,
+                                                     where=where,
+                                                     order_by=EventMappingTable.name
+                                                     )
+
+    async def load_by_event_types(self, event_types: List[str], only_enabled: bool = True) -> SelectResult:
+        if only_enabled:
+            where = where_tenant_and_mode_context(
+                EventMappingTable,
+                EventMappingTable.event_type.in_(event_types),
+                EventMappingTable.enabled == only_enabled
+            )
+        else:
+            where = where_tenant_and_mode_context(
+                EventMappingTable,
+                EventMappingTable.event_type.in_(event_types)
             )
 
         return await self._select_in_deployment_mode(EventMappingTable,
