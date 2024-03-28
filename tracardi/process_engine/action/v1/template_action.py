@@ -54,7 +54,7 @@ def register() -> Plugin:
                             name="Template",
                             description="Provide template with placeholders. Placeholders start with {{ and end "
                                         "with }}. Data is referenced with dot notation. Example: {{profile@pii.name}}",
-                            component=FormComponent(type="textarea", props={"label": "template", "rows": 15})
+                            component=FormComponent(type="textarea", props={"label": "template", "rows": 17})
                         )
                     ]
                 ),
