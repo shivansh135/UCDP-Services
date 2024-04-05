@@ -1,6 +1,7 @@
 import asyncio
 
-from tracardi.service.decorators.function_memory_cache import cache_for, cache, async_cache_for, delete_cache
+from tracardi.context import ServerContext, Context, get_context
+from tracardi.service.decorators.function_memory_cache import cache_for, cache, async_cache_for, delete_cache, has_cache
 import time
 
 
@@ -15,52 +16,85 @@ async def y(a):
 
 
 def test_positive_path():
-    assert x(1) == 1
-    assert x(2) == 2
+    with ServerContext(Context(production=True)):
 
-    assert 'unit.test_function_memory_cache:x' in cache
+        context = get_context()
+        context_hash = context.__hash__()
+        fnc_str = f"{context_hash}:unit.test_function_memory_cache:x"
 
-    assert cache['unit.test_function_memory_cache:x'].name == 'unit.test_function_memory_cache:x'
-    assert len(cache['unit.test_function_memory_cache:x'].memory_buffer) == 2
+        assert x(1) == 1
+        assert x(2) == 2
 
-    assert x(3) == 3
-    assert x(4) == 4
+        assert fnc_str in cache
 
-    time.sleep(1)
+        assert cache[fnc_str].name == fnc_str
+        assert len(cache[fnc_str].memory_buffer) == 2
 
-    assert x(5) == 5
+        assert x(3) == 3
+        assert x(4) == 4
 
-    assert len(cache['unit.test_function_memory_cache:x'].memory_buffer) == 1
+        time.sleep(1)
+
+        assert x(5) == 5
+
+        assert len(cache[fnc_str].memory_buffer) == 1
 
 
 def test_async_positive_path():
     async def main():
+        with ServerContext(Context(production=True)):
 
-        assert await y(1) == 1
-        assert await y(2) == 2
+            context = get_context()
+            context_hash = context.__hash__()
+            fnc_str = f"{context_hash}:unit.test_function_memory_cache:y"
 
-        assert 'unit.test_function_memory_cache:y' in cache
-        assert cache['unit.test_function_memory_cache:y'].name == 'unit.test_function_memory_cache:y'
-        assert len(cache['unit.test_function_memory_cache:y'].memory_buffer) == 2
+            assert await y(1) == 1
+            assert await y(2) == 2
 
-        assert await y(3) == 3
-        assert await y(4) == 4
+            assert fnc_str in cache
+            assert cache[fnc_str].name == fnc_str
+            assert len(cache[fnc_str].memory_buffer) == 2
 
-        await asyncio.sleep(1)
+            assert await y(3) == 3
+            assert await y(4) == 4
 
-        assert await y(5) == 5
+            await asyncio.sleep(1)
 
-        assert len(cache['unit.test_function_memory_cache:y'].memory_buffer) == 1
+            assert await y(5) == 5
+
+            assert len(cache[fnc_str].memory_buffer) == 1
 
     asyncio.run(main())
 
 
 
 def test_delete():
-    assert x(1) == 1
-    assert 'unit.test_function_memory_cache:x' in cache
-    assert len(cache['unit.test_function_memory_cache:x'].memory_buffer) == 1
+    with ServerContext(Context(production=True)):
 
-    delete_cache(x, 1)
+        context = get_context()
+        context_hash = context.__hash__()
+        fnc_str = f"{context_hash}:unit.test_function_memory_cache:x"
 
-    assert len(cache['unit.test_function_memory_cache:x'].memory_buffer) == 0
+        assert x(1) == 1
+        assert fnc_str in cache
+        assert len(cache[fnc_str].memory_buffer) == 1
+
+        delete_cache(x, 1)
+
+        assert len(cache[fnc_str].memory_buffer) == 0
+
+
+def test_multi_tenant():
+    with ServerContext(Context(production=True)):
+        assert 1 == x(1)
+        assert has_cache(x, 1)
+        delete_cache(x, 1)
+        assert not has_cache(x, 1)
+
+    with ServerContext(Context(production=False)):
+        assert 1 == x(1)
+
+    with ServerContext(Context(production=True)):
+        assert not has_cache(x, 1)
+        with ServerContext(Context(production=False)):
+            assert has_cache(x, 1)
