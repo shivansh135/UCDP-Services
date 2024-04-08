@@ -14,16 +14,20 @@ def _args_key(args, kwargs):
     return ':'.join(map(str, key_parts))
 
 
-def _func_key(func):
-    context = get_context()
-    key_parts = [context.__hash__(), func.__module__, func.__qualname__]
+def _func_key(func, use_context:bool=True):
+    if use_context:
+        context = get_context()
+        key_parts = [context.__hash__(), func.__module__, func.__qualname__]
+    else:
+        key_parts = [func.__module__, func.__qualname__]
+
     return ':'.join(map(str, key_parts))
 
-def _run_function(func, args, kwargs, max_size, allow_null_values, key_func:Callable=None) -> Tuple[Any, str, str]:
+def _run_function(func, args, kwargs, max_size, allow_null_values, key_func:Callable=None, use_context: bool=True) -> Tuple[Any, str, str]:
     # Construct a unique cache key from the function's module name,
     # function name, args, and kwargs to avoid collisions.
 
-    func_key = _func_key(func)
+    func_key = _func_key(func, use_context)
 
     if key_func is not None:
         args_key = key_func(*args, **kwargs)
@@ -42,12 +46,12 @@ def _run_function(func, args, kwargs, max_size, allow_null_values, key_func:Call
 
     return result, func_key, args_key
 
-def async_cache_for(ttl, max_size=1000, allow_null_values=False, key_func:Callable=None):
+def async_cache_for(ttl, max_size=1000, allow_null_values=False, key_func:Callable=None, use_context:bool=True):
     def decorator(func):
         @functools.wraps(func)
         async def async_wrapper(*args, **kwargs):
 
-            result, func_key, args_key = _run_function(func, args, kwargs, max_size, allow_null_values, key_func)
+            result, func_key, args_key = _run_function(func, args, kwargs, max_size, allow_null_values, key_func, use_context)
             if asyncio.iscoroutine(result):
                 result = await result
 
@@ -60,11 +64,11 @@ def async_cache_for(ttl, max_size=1000, allow_null_values=False, key_func:Callab
     return decorator
 
 
-def cache_for(ttl, max_size=1000, allow_null_values=False, key_func:Callable=None):
+def cache_for(ttl, max_size=1000, allow_null_values=False, key_func:Callable=None, use_context:bool=True):
     def decorator(func):
         @functools.wraps(func)
         def sync_wrapper(*args, **kwargs):
-            result, func_key, args_key = _run_function(func, args, kwargs, max_size, allow_null_values, key_func)
+            result, func_key, args_key = _run_function(func, args, kwargs, max_size, allow_null_values, key_func, use_context)
 
             # Update cache
             cache[func_key][args_key] = CacheItem(data=result, ttl=ttl)
@@ -77,7 +81,7 @@ def cache_for(ttl, max_size=1000, allow_null_values=False, key_func:Callable=Non
 
 def delete_cache(func, *args, **kwargs):
     args_key = _args_key(args, kwargs)
-    func_key = _func_key(func)
+    func_key = _func_key(func, True)
     try:
         cache_item = cache[func_key]
         cache_item.delete(args_key)
@@ -86,7 +90,7 @@ def delete_cache(func, *args, **kwargs):
 
 def has_cache(func, *args, **kwargs) -> bool:
     args_key = _args_key(args, kwargs)
-    func_key = _func_key(func)
+    func_key = _func_key(func, True)
     if func_key not in cache:
         return False
     cache_item = cache[func_key]
