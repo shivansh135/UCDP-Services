@@ -32,12 +32,19 @@ class SessionTime(Time):
         if self.timestamp == 0:
             self.timestamp = datetime.timestamp(now_in_utc())
 
+    @staticmethod
+    def new() -> 'SessionTime':
+        return SessionTime()
 
 class SessionMetadata(BaseModel):
     time: SessionTime = SessionTime()
     channel: Optional[str] = None
     aux: Optional[dict] = {}
     status: Optional[str] = None
+
+    @staticmethod
+    def new() -> 'SessionMetadata':
+        return SessionMetadata(time=SessionTime.new())
 
 
 class SessionContext(dict):
@@ -150,7 +157,7 @@ class Session(Entity):
     def new(id: Optional[str] = None, profile_id: str=None) -> 'Session':
         session = Session(
             id=str(uuid.uuid4()) if not id else id,
-            metadata=SessionMetadata()
+            metadata=SessionMetadata.new()
         )
         session.fill_meta_data()
         session.set_new()
