@@ -72,9 +72,13 @@ async def os_tracker(source: EventSource,
                 await save_events_in_db(events)
 
         # Save field change log
+        _updated_fields_log = []
         if field_timestamp_monitor:
             timestamp_log = field_timestamp_monitor.get_timestamps_log()
-            await field_update_log_db.upsert(timestamp_log.get_history_log())
+            _updated_fields_log = timestamp_log.get_history_log()
+
+        if _updated_fields_log:
+            await field_update_log_db.upsert(_updated_fields_log)
 
         try:
 
@@ -93,11 +97,15 @@ async def os_tracker(source: EventSource,
                 tracker_payload.debug)
 
             # Dispatch outbound profile SYNCHRONOUSLY
-            changed_fields_monitor = field_timestamp_monitor.get_timestamps_log()
+            _updated_fields_log = []
+            if field_timestamp_monitor:
+                changed_fields_monitor = field_timestamp_monitor.get_timestamps_log()
+                _updated_fields_log = changed_fields_monitor.get_history_log(add_id=False)
+
             await sync_profile_destination(
                 profile,
                 session,
-                changed_fields_monitor.get_history_log(add_id=False)
+                _updated_fields_log
             )
 
             # ----------------------------------------------
