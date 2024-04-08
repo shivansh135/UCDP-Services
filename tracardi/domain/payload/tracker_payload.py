@@ -119,6 +119,8 @@ class TrackerPayload(BaseModel):
         return self._user_agent
 
     def is_bot(self) -> bool:
+        if self.request.get('headers', {}).get('origin', '') == 'https://gtm-msr.appspot.com':
+            return True
         _user_agent = self.get_user_agent()
         if _user_agent:
             return _user_agent.is_bot
