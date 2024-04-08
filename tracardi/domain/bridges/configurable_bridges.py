@@ -89,7 +89,7 @@ class WebHookBridge(ConfigurableBridge):
                     if not tracker_payload.profile:
                         tracker_payload.replace_profile(str(uuid4()))
 
-            elif 'replace_profile_id' in self.config:
+            if 'replace_profile_id' in self.config:
 
                 replace_profile_id = self.config.get('replace_profile_id', None)
 

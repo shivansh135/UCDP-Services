@@ -64,7 +64,8 @@ open_webhook_source_bridge = Bridge(
                     id="replace_profile_id",
                     name="Please type the location of the profile ID in payload.",
                     description="By default, webhook events do not include session or profile IDs. "
-                                "However, if you would like to add profile ID from payload type the location of it.",
+                                "However, if you would like to add profile ID from payload type the location of it. E.g. profile.id. "
+                                "Do not prefix location with `properties` (properties.profile.id is incorrect value).",
 
                     component=FormComponent(type="text", props={"label": "Profile ID location"})
                 )

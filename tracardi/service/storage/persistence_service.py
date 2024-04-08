@@ -9,7 +9,7 @@ from tracardi.domain.entity import Entity
 from tracardi.domain.storage.index_mapping import IndexMapping
 from tracardi.domain.storage_aggregate_result import StorageAggregateResult
 from tracardi.domain.value_object.bulk_insert_result import BulkInsertResult
-from datetime import datetime
+from datetime import datetime, timedelta
 from typing import Tuple, Optional
 from tracardi.domain.storage_record import StorageRecords, StorageRecord
 from tracardi.exceptions.log_handler import get_logger
@@ -24,8 +24,6 @@ from tracardi.service.storage.elastic_storage import ElasticStorage
 
 _logger = get_logger(__name__)
 
-
-from datetime import datetime, timedelta
 
 
 def _timedelta_to_largest_unit(delta: timedelta):
