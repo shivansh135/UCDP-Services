@@ -20,7 +20,7 @@ class DatabaseService:
     async def _create_database(self):
         engine = self.client.get_engine()
         async with engine.connect() as conn:
-            await conn.execute(text(f"CREATE DATABASE IF NOT EXISTS {mysql.mysql_database}"))
+            await conn.execute(text(f"CREATE DATABASE IF NOT EXISTS `{mysql.mysql_database}`"))
             await conn.commit()
         await engine.dispose()
 
