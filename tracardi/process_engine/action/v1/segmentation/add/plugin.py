@@ -45,7 +45,7 @@ class AddSegmentAction(ActionRunner):
 
                 try:
                     dot = self._get_dot_accessor(payload)
-                    if isinstance(self.config.segment, list):
+                    if isinstance(self.config.segment, (list, str)):
                         converter = DictTraverser(dot, include_none=False)
                         segments = converter.reshape(self.config.segment)
                         add_segment_to_profile(profile, segments)
