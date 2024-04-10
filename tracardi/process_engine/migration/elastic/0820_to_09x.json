@@ -362,7 +362,7 @@
     "copy_index": {
       "from_index": "tracardi-entity",
       "to_index": "tracardi-entity",
-      "multi": false,
+      "multi": true,
       "script": null
     },
     "worker": "reindex",
