@@ -1,8 +1,5 @@
-import logging
-
-from tracardi.config import tracardi
 from tracardi.domain.flow_action_plugin import FlowActionPlugin
-from tracardi.exceptions.log_handler import log_handler
+from tracardi.exceptions.log_handler import get_logger
 from tracardi.service.storage.mysql.mapping.plugin_mapping import map_to_plugin_table
 from tracardi.service.storage.mysql.schema.table import PluginTable
 from tracardi.service.storage.mysql.service.table_service import TableService
@@ -11,9 +8,7 @@ from tracardi.service.storage.mysql.service.table_filtering import sql_functions
 from tracardi.service.storage.mysql.utils.select_result import SelectResult
 
 
-logger = logging.getLogger(__name__)
-logger.setLevel(tracardi.logging_level)
-logger.addHandler(log_handler)
+logger = get_logger(__name__)
 
 # --------------------------------------------------------
 # This Service Runs in Production and None-Production Mode

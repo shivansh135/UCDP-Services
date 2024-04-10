@@ -94,7 +94,8 @@ class TableService(metaclass=Singleton):
                                            search: Optional[str] = None,
                                            limit: int = None,
                                            offset: int = None,
-                                           columns=None
+                                           columns=None,
+                                           order_by=None
                                            ) -> SelectResult:
         and_clauses = []
         if search:
@@ -102,9 +103,12 @@ class TableService(metaclass=Singleton):
 
         where = where_tenant_and_mode_context(table, *and_clauses)
 
+        if order_by is None:
+            order_by = table.name
+
         return await self._select_in_deployment_mode(table,
                                                      where=where,
-                                                     order_by=table.name,
+                                                     order_by=order_by,
                                                      columns=columns,
                                                      limit=limit,
                                                      offset=offset)
