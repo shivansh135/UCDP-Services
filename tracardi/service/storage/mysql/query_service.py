@@ -97,14 +97,14 @@ class MysqlQuery:
             delete(table).where(where())
         )
 
-    async def select(self, table: Type[Base],
+    async def select(self,
+                     table: Type[Base],
                      columns=None,
                      where: Optional[Callable] = None,
                      order_by: Column = None,
                      limit: int = None,
                      offset: int = None,
                      distinct: bool = False) -> MySqlQueryResult:
-        context = get_context()
 
         query = self._select_clause(table,
                                     columns,
