@@ -487,6 +487,7 @@
     "name": "Profile Traits Update",
     "description": "User updates profile traits. All traits will be replaced by event properties.",
     "id": "profile-traits-update",
+    "properties": {},
     "copy": {
       "traits": "properties"
     },
