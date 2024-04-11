@@ -7,9 +7,11 @@ from tracardi.service.plugin.runner import ActionRunner
 class UpdateProfileAction(ActionRunner):
 
     async def run(self, payload: dict, in_edge=None):
-        self.profile.metadata.time.update = now_in_utc()
-        self.profile.mark_for_update()
-        self.profile.data.compute_anonymous_field()
+        if self.profile:
+            self.profile.mark_for_update()
+            self.profile.data.compute_anonymous_field()
+        else:
+            self.console.error(f"Could not update profile within profile-less event.")
 
 
 def register() -> Plugin:
