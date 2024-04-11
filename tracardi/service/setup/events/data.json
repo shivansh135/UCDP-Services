@@ -482,5 +482,21 @@
     },
     "tags": ["event:operational"],
     "state": "awareness"
+  },
+  {
+    "name": "Profile Traits Update",
+    "description": "User updates profile traits. All traits will be replaced by event properties.",
+    "id": "profile-traits-update",
+    "copy": {
+      "traits": "properties"
+    },
+    "profile": {
+      "traits": [
+        "traits",
+        "equal"
+      ]
+    },
+    "tags": ["event:operational"],
+    "state": "awareness"
   }
 ]
