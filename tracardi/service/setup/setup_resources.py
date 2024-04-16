@@ -33,11 +33,21 @@ def get_resource_types() -> List[ResourceSettings]:
             icon="aws",
             tags=["aws", "s3"],
             config={
-                "access_key": "<api-key>",
-                "secret": "<secret>",
+                "aws_secret_access_key": "<aws-secret-access-key>",
+                "aws_access_key_id": "<aws-access-key-id>",
                 "bucket": "<bucket>"
             },
             manual='s3_aws'
+        ),
+        ResourceSettings(
+            id="aws-iam",
+            name="AWS IAM",
+            icon="aws",
+            tags=["aws", "iam"],
+            config={
+                "aws_secret_access_key": "<aws-secret-access-key>",
+                "aws_access_key_id": "<aws-access-key-id>",
+            }
         ),
         ResourceSettings(
             id="api",

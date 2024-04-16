@@ -4,11 +4,6 @@ from tracardi.service.plugin.domain.config import PluginConfig
 from tracardi.domain.named_entity import NamedEntity
 
 
-class AwsIamAuth(BaseModel):
-    aws_access_key_id: str
-    aws_secret_access_key: str
-
-
 class Content(BaseModel):
     content: str
     type: str

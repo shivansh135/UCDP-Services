@@ -1,11 +1,12 @@
 import json
 
+from tracardi.domain.resources.aws_i_am import AwsIamAuth
 from tracardi.service.domain import resource as resource_db
 from tracardi.service.plugin.runner import ActionRunner
 from tracardi.service.plugin.domain.result import Result
 from tracardi.service.plugin.domain.register import Plugin, Spec, MetaData, \
     Documentation, PortDoc
-from .model.model import AwsSqsConfiguration, AwsIamAuth, MessageAttributes
+from .model.model import AwsSqsConfiguration, MessageAttributes
 from aiobotocore.session import get_session
 
 
@@ -23,7 +24,7 @@ class AwsSqsAction(ActionRunner):
         resource = await resource_db.load(config.source.id)
 
         self.aws_config = config
-        self.credentials = resource.credentials.get_credentials(self, output=AwsIamAuth)
+        self.credentials: AwsIamAuth = resource.credentials.get_credentials(self, output=AwsIamAuth)
 
     async def run(self, payload: dict, in_edge=None) -> Result:
         try:
