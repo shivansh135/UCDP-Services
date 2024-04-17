@@ -25,6 +25,9 @@ class BridgeService(TableService):
     async def insert(self, bridge: Bridge):
         return await self._insert_if_none(BridgeTable, map_to_bridge_table(bridge), server_context=False)
 
+    async def replace(self, bridge: Bridge):
+        return await self._replace(BridgeTable, map_to_bridge_table(bridge))
+
     # Custom
 
     @staticmethod
@@ -33,3 +36,10 @@ class BridgeService(TableService):
         for bridge in default_bridges:
             await bs.insert(bridge)
             logger.info(f"Bridge {bridge.name} installed.")
+
+    @staticmethod
+    async def reinstall(default_bridges: List[Bridge]):
+        bs = BridgeService()
+        for bridge in default_bridges:
+            await bs.replace(bridge)
+            logger.info(f"Bridge {bridge.name} reinstalled.")
