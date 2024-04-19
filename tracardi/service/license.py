@@ -1,6 +1,6 @@
 import os
 from hashlib import md5
-from typing import Dict
+from typing import Dict, Optional
 
 from pydantic import BaseModel
 from time import time
@@ -36,8 +36,11 @@ class Service(BaseModel):
 
 
 class License(BaseModel):
+    id: Optional[str] = None
+    company: Optional[str] = None
     owner: str
     expires: int = time() + 60 * 60 * 24
+    version: Optional[str] = None
     services: Dict[str, Service]
 
     def is_expired(self):
@@ -146,11 +149,16 @@ class License(BaseModel):
             if 'u' not in license or 'e' not in license or 's' not in license:
                 raise AssertionError("Invalid license")
 
-            return License(owner=license['u'],
-                           expires=license['e'],
-                           services={
-                               key: Service(id=service['i']) for key, service in license['s'].items()
-                           })
+            return License(
+                id=license.get('id', None),
+                company=license.get('c', None),
+                version=license.get('v', None),
+                owner=license['u'],
+                expires=license['e'],
+                services={
+                    key: Service(id=service['i']) for key, service in license['s'].items()
+                })
+
         except ValueError:
             raise ValueError("License incorrect. Please check if you paste everything from the license key.")
 
