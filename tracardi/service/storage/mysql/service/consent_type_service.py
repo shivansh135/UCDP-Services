@@ -29,8 +29,7 @@ class ConsentTypeService(TableService):
                                                            primary_id=consent_type_id)
 
     async def insert(self, consent_type: ConsentType):
-        return await self._insert_if_none(ConsentTypeTable, map_to_consent_type_table(consent_type))
-
+        return await self._replace(ConsentTypeTable, map_to_consent_type_table(consent_type))
 
     async def load_enabled(self, limit: int = None, offset: int = None) -> SelectResult:
         where = where_tenant_and_mode_context(
