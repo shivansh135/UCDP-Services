@@ -76,8 +76,11 @@ async def load_by_key_value_pairs(index, key_value_pairs: List[tuple], sort_by: 
 async def update_profile_ids(index: str, old_profile_id: str, merged_profile_id):
     query = {
         "script": {
-            "source": f"ctx._source.profile.id = '{merged_profile_id}'",
-            "lang": "painless"
+            "source": "ctx._source.profile.id = params.merged_profile_id",
+            "lang": "painless",
+            "params": {
+                "merged_profile_id": f"{merged_profile_id}"
+            }
         },
         "query": {
             "term": {
