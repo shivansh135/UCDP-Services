@@ -1,5 +1,6 @@
 from typing import List, Any
 
+from tracardi.domain import ExtraInfo
 from tracardi.domain.destination import Destination
 from tracardi.domain.resource import Resource
 from tracardi.process_engine.destination.destination_interface import DestinationInterface
@@ -33,10 +34,15 @@ async def _get_destination_dispatchers(destinations: List[Destination], dot, tem
             continue
 
         # Load resource from cache
-        resource = await load_resource(destination.resource.id)
+        try:
+            resource = await load_resource(destination.resource.id)
 
-        if resource.enabled is False:
-            raise ConnectionError(f"Can't connect to disabled resource: {resource.name}.")
+            if resource.enabled is False:
+                raise ConnectionError(f"Can't connect to disabled resource: {resource.name}.")
+
+        except ValueError as e:
+            logger.error(str(e), exc_info=ExtraInfo.exact('resource-loading', package=__name__))
+            continue
 
         data = template.reshape(reshape_template=destination.mapping)
 
