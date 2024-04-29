@@ -41,7 +41,7 @@ async def _get_destination_dispatchers(destinations: List[Destination], dot, tem
                 raise ConnectionError(f"Can't connect to disabled resource: {resource.name}.")
 
         except ValueError as e:
-            logger.error(str(e), exc_info=ExtraInfo.exact('resource-loading', package=__name__))
+            logger.error(f"Destination {destination.name} not triggered. Reason: {str(e)}", exc_info=ExtraInfo.exact('resource-loading', package=__name__))
             continue
 
         data = template.reshape(reshape_template=destination.mapping)
