@@ -13,9 +13,9 @@ async def load(id: str) -> Resource:
     resource = (await rs.load_by_id(id)).map_to_object(map_to_resource)
 
     if resource is None:
-        raise ValueError('Resource id {} does not exist.'.format(id))
+        raise ValueError(f'Resource id {id} does not exist.')
 
     if not resource.enabled:
-        raise ValueError('Resource id {} disabled.'.format(id))
+        raise ValueError(f'Resource id {id} disabled.')
 
     return resource
