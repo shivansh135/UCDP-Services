@@ -16,12 +16,14 @@ from tracardi.service.tracker_config import TrackerConfig
 from tracardi.config import tracardi
 from tracardi.domain.event_source import EventSource
 from tracardi.exceptions.log_handler import get_logger
+from tracardi.service.telemetry import trace
 if License.has_license():
     from com_tracardi.service.tracking.tracker import com_tracker
 else:
     from tracardi.service.tracking.tracker import os_tracker
 
 logger = get_logger(__name__)
+tracer = trace.get_tracer(__name__)
 
 
 class Tracker:
@@ -120,7 +122,9 @@ class Tracker:
 
         # Validate event source
 
-        source = await validate_source(self.tracker_config, tracker_payload)
+        with tracer.start_as_current_span('validate-event-source'):
+            print('xxx')
+            source = await validate_source(self.tracker_config, tracker_payload)
 
         logger.debug(f"Source {source.id} validated.")
 
