@@ -81,7 +81,18 @@ setup(
         'twilio==8.2.1',
         'huey',
         'pulsar-client==3.3.0',
-        'aiokafka==0.8.1'
+        'aiokafka==0.8.1',
+        # Telemetry
+        'opentelemetry-distro==0.45b0',
+        'opentelemetry-instrumentation-wsgi==0.45b0',
+        'opentelemetry-instrumentation-asyncio==0.45b0',
+        'opentelemetry-instrumentation-fastapi==0.45b0',
+        'opentelemetry-instrumentation-mysql==0.45b0',
+        'opentelemetry-instrumentation-elasticsearch==0.45b0',
+        'opentelemetry-instrumentation-aiohttp-client==0.45b0',
+        'opentelemetry-instrumentation-sqlalchemy==0.45b0',
+        'opentelemetry-instrumentation-logging==0.45b0',
+        'opentelemetry-exporter-otlp-proto-grpc==1.24.0'
     ],
     classifiers=[
         "Programming Language :: Python :: 3",
