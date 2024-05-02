@@ -123,7 +123,6 @@ class Tracker:
         # Validate event source
 
         with tracer.start_as_current_span('validate-event-source'):
-            print('xxx')
             source = await validate_source(self.tracker_config, tracker_payload)
 
         logger.debug(f"Source {source.id} validated.")
