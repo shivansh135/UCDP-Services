@@ -1,4 +1,3 @@
-from opentelemetry import trace
 from typing import Optional
 
 from tracardi.domain.bridges.configurable_bridges import WebHookBridge, RestApiBridge, ConfigurableBridge
@@ -24,7 +23,6 @@ else:
     from tracardi.service.tracking.tracker import os_tracker
 
 logger = get_logger(__name__)
-tracer = trace.get_tracer(__name__)
 
 
 class Tracker:
@@ -123,8 +121,7 @@ class Tracker:
 
         # Validate event source
 
-        with tracer.start_as_current_span('validate-event-source'):
-            source = await validate_source(self.tracker_config, tracker_payload)
+        source = await validate_source(self.tracker_config, tracker_payload)
 
         logger.debug(f"Source {source.id} validated.")
 
