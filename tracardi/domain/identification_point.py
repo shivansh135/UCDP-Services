@@ -15,6 +15,6 @@ class IdentificationPoint(NamedEntityInContext):
     description: Optional[str] = ""
     source: NamedEntity
     event_type: NamedEntity
-    fields: List[IdentificationField]
+    fields: Optional[List[IdentificationField]] = None
     enabled: bool = False
     settings: Optional[dict] = {}
