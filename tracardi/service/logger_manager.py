@@ -23,7 +23,7 @@ async def save_logs():
         log_handler.reset()
         if License.has_license():
             # Runs only if there are logs (see logger_guard) and it is deferred.
-            log_saver_worker(logs)
+            await log_saver_worker(logs)
         else:
             if await installation_status.has_logs_index(get_context()):
                 return await log_db.save(logs)
