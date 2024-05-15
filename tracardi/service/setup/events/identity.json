@@ -109,6 +109,8 @@
         "business": "string"
       },
       "id": "string",
+      "firstname": "string",
+      "lastname": "string",
       "pk": "string",
       "token": "string",
       "passport": "string",
@@ -127,6 +129,8 @@
       "signal": "string"
     },
     "copy": {
+      "data.pii.firstname":          "properties.firstname",
+      "data.pii.lastname":           "properties.lastname",
       "data.contact.email.main":     "properties.email.main",
       "data.contact.email.private":  "properties.email.private",
       "data.contact.email.business": "properties.email.business",
