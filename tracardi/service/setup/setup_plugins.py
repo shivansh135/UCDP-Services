@@ -4,6 +4,15 @@ from tracardi.service.setup.domain.plugin_metadata import PluginMetadata, Plugin
 
 installed_plugins: Dict[str, PluginMetadata] = {
 
+    "tracardi.process_engine.action.v1.ux.question_popup.plugin": PluginMetadata(
+        test=PluginTest(
+            init={'api_url': 'http://localhost:8686', 'content': None, 'dark_theme': False, 'event_type': None,
+                  'horizontal_pos': 'center', 'left_button_text': None, 'popup_lifetime': '6', 'popup_title': None,
+                  'right_button_text': None, 'save_event': True, 'uix_source': 'http://localhost:8686',
+                  'vertical_pos': 'bottom'},
+            resource=None)
+    ),
+
     "tracardi.process_engine.action.v1.connectors.aws.s3.upload_segments.plugin": PluginMetadata(
         test=PluginTest(
             init={
@@ -1105,13 +1114,7 @@ test_plugins: Dict[str, PluginMetadata] = {
     #     resource=None
     # ),
     #
-    # "tracardi.process_engine.action.v1.ux.question_popup.plugin": PluginTestTemplate(
-    #     init={'api_url': 'http://localhost:8686', 'content': None, 'dark_theme': False, 'event_type': None,
-    #           'horizontal_pos': 'center', 'left_button_text': None, 'popup_lifetime': '6', 'popup_title': None,
-    #           'right_button_text': None, 'save_event': True, 'uix_source': 'http://localhost:8686',
-    #           'vertical_pos': 'bottom'},
-    #     resource=None
-    # ),
+
 
     "tracardi.process_engine.action.v1.connectors.elasticsearch.query.plugin": PluginMetadata(
         test=PluginTest(init={'index': {'id': '1', 'name': 'Some value'}, 'query': '{"query":{"match_all":{}}}',

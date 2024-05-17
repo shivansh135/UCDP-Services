@@ -5,6 +5,7 @@ from tracardi.service.plugin.runner import ActionRunner
 from pydantic import field_validator
 from tracardi.service.notation.dot_template import DotTemplate
 from tracardi.service.plugin.domain.config import PluginConfig
+import html
 
 
 class Config(PluginConfig):
@@ -90,8 +91,8 @@ class QuestionPopupPlugin(ActionRunner):
                 "data-session-id": self.event.session.id,
                 "data-left-button-text": self.config.left_button_text,
                 "data-right-button-text": self.config.right_button_text,
-                "data-popup-title": self.config.popup_title,
-                "data-content": content,
+                "data-popup-title": html.escape(self.config.popup_title),
+                "data-content": html.escape(content, quote=True),
                 "data-horizontal-position": self.config.horizontal_pos,
                 "data-vertical-position": self.config.vertical_pos,
                 "data-popup-lifetime": self.config.popup_lifetime,
@@ -119,13 +120,13 @@ def register() -> Plugin:
             outputs=["payload"],
             version='0.6.1',
             license="MIT + CC",
-            author="Dawid Kruk",
+            author="Dawid Kruk, Risto Kowaczewski",
             manual="question_popup_action",
             init={
                 "api_url": "http://localhost:8686",
                 "uix_source": "http://localhost:8686",
-                "popup_title": None,
-                "content": None,
+                "popup_title": "",
+                "content": "",
                 "left_button_text": None,
                 "right_button_text": None,
                 "horizontal_pos": "center",
