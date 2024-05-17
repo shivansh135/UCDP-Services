@@ -11,6 +11,39 @@ from tracardi.service.storage.factory import storage_manager
 logger = get_logger(__name__)
 
 
+async def get_duplicated_emails():
+    query = {
+        "size": 0,
+        "query": {
+            "exists": {
+                "field": "data.contact.email.main"
+            }
+        },
+        "aggs": {
+            "duplicate_emails": {
+                "terms": {
+                    "field": "data.contact.email.main",
+                    "min_doc_count": 2,
+                    "size": 1000
+                }
+            },
+        }
+    }
+    result = await storage_manager('profile').query(query)
+    for bucket in result.aggregations('duplicate_emails').buckets():
+        yield bucket['key']
+
+
+def get_profiles_by_email(email: str):
+    query = {
+        "query": {
+            "term": {
+                "data.contact.email.main": email
+            }
+        }
+    }
+    return storage_manager('profile').scan(query, batch=1000)
+
 def load_profiles_for_auto_merge():
     query = {
         "query": {
