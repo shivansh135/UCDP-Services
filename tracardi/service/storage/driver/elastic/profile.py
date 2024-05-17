@@ -31,7 +31,7 @@ async def get_duplicated_emails():
     }
     result = await storage_manager('profile').query(query)
     for bucket in result.aggregations('duplicate_emails').buckets():
-        yield bucket['key']
+        yield bucket['key'], bucket['doc_count']
 
 
 def get_profiles_by_email(email: str):

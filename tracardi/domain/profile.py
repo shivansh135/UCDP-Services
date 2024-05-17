@@ -85,7 +85,9 @@ class Profile(PrimaryEntity):
         return 'consents' in self.aux and 'granted' in self.aux['consents'] and self.aux['consents']['granted'] is True
 
     def has_hashed_email_id(self, type: str = None) -> bool:
-
+        """
+        This only checks if there are prefixed ids. It does not check if they are correct. APM does it.
+        """
         if type is None:
             type = self.data.contact.email.email_types()
 
