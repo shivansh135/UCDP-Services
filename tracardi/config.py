@@ -71,6 +71,44 @@ class MysqlConfig:
 
         return uri.strip(" /")
 
+class StarRocksConfig:
+    def __init__(self, env):
+        self.env = env
+        self.starrocks_host = env.get('STARROCKS_HOST', "localhost")
+        self.starrocks_username = env.get('STARROCKS_USERNAME', "root")
+        self.starrocks_password = env.get('STARROCKS_PASSWORD', "root")
+        self.starrocks_schema = env.get('STARROCKS_SCHEMA', "starrocks://")
+        self.starrocks_schema_sync = env.get('STARROCKS_SCHEMA', "starrocks://")
+        self.starrocks_port = env.get('STARROCKS_PORT', 9030)
+        self.starrocks_database = env.get('STARROCKS_DATABASE', "tracardi")
+        self.starrocks_echo = env.get('STARROCKS_ECHO', "no") == "yes"
+
+        self.starrocks_database = self.starrocks_database.strip(" /")
+
+        self.starrocks_database_uri = self.uri(async_driver=True)
+        self.starrocks_database_uri_with_db = f"{self.starrocks_database_uri}/{self.starrocks_database}"
+
+
+    def _get_schema(self, async_driver:bool=True):
+        if async_driver:
+            return self.starrocks_schema
+        return self.starrocks_schema_sync
+
+    def uri(self, async_driver:bool=True) -> str:
+        if self.starrocks_username and self.starrocks_password:
+            _creds = f"{self.starrocks_username}:{self.starrocks_password}"
+        elif self.starrocks_username:
+            _creds = f"{self.starrocks_username}:"
+        else:
+            _creds = ""
+
+        if _creds:
+            uri = f"{self._get_schema(async_driver)}{_creds}@{self.starrocks_host}:{self.starrocks_port}"
+        else:
+            uri = f"{self._get_schema(async_driver)}{self.starrocks_host}:{self.starrocks_port}"
+
+        return uri.strip(" /")
+
 class ElasticConfig:
 
     def __init__(self, env):
@@ -276,3 +314,4 @@ class TracardiConfig(metaclass=Singleton):
 
 tracardi = TracardiConfig(os.environ)
 mysql = MysqlConfig(os.environ)
+starrocks = StarRocksConfig(os.environ)

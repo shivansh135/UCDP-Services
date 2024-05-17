@@ -96,6 +96,9 @@ class RedisClient(metaclass=Singleton):
     def pubsub(self, **kwargs):
         return self.client.pubsub(**kwargs)
 
+    def publish(self, *args, **kwargs):
+        return self.client.publish(*args, **kwargs)
+
     def mset(self, mapping):
         return self.client.mset(mapping)
 

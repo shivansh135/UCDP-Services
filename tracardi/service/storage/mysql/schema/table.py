@@ -761,6 +761,7 @@ class ConfigurationTable(Base):
     tags = Column(String(128))
     config = Column(JSON)
     ttl = Column(Integer, default=0)
+    # cluster_wide_value = Column(Boolean)
 
     tenant = Column(String(40))
 

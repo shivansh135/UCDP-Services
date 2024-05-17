@@ -13,7 +13,8 @@ def map_to_configuration_table(configuration: Configuration) -> ConfigurationTab
         tags=",".join(configuration.tags) if configuration.tags else "",
         description=configuration.description,
         tenant=context.tenant,
-        ttl=configuration.ttl
+        ttl=configuration.ttl,
+        # cluster_wide_value=configuration.cluster_wide_value
     )
 
 def map_to_configuration(configuration_table: ConfigurationTable) -> Configuration:
@@ -25,5 +26,6 @@ def map_to_configuration(configuration_table: ConfigurationTable) -> Configurati
         enabled=configuration_table.enabled,
         description=configuration_table.description,
         tags=configuration_table.tags.split(",") if configuration_table.tags else [],
-        ttl=configuration_table.ttl
+        ttl=configuration_table.ttl,
+        # cluster_wide_value=configuration_table.cluster_wide_value
     )

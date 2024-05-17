@@ -1,7 +1,7 @@
 from pydantic import field_validator
 from uuid import uuid4
 
-from typing import Any, Optional, List
+from typing import Any, Optional, List, Union
 
 from datetime import datetime
 
@@ -11,11 +11,12 @@ from tracardi.service.utils.date import now_in_utc
 
 class Configuration(NamedEntity):
     timestamp: Optional[datetime] = None
-    config: dict
+    config: Union[dict|str|bool|int|float]
     description: Optional[str] = ""
     enabled: bool = False
     tags: Optional[List[str]] = []
     ttl: Optional[int] = 0
+    # cluster_wide_value: bool
 
     def __init__(self, **data: Any):
         if 'id' not in data:

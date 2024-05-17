@@ -30,7 +30,7 @@ async def os_tracker(source: EventSource,
     try:
 
         if not tracker_payload.events:
-            logger.debug(f"No events have been sent in tracker payload.")
+            logger.warning(f"No events have been sent in tracker payload.")
             return None
 
         # Load profile and session
