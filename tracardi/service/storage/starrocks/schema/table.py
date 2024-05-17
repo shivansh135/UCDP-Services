@@ -8,7 +8,7 @@ class EventTable(Base):
     __tablename__ = 'event'
 
     # Define fields according to Elasticsearch mapping
-    id = Column(String(64), primary_key=True)
+    id = Column(String(64))
     name = Column(String(255))
 
     metadata_aux = Column(JSON)
@@ -250,10 +250,10 @@ class ProfileTable(Base):
     __tablename__ = 'profile'
 
     # Primary Key
-    id = Column(String(64), primary_key=True)
+    id = Column(String(64))
 
     # Other fields
-    ids = Column(String(255))
+    ids = Column(String(255))  # Array of ids
     metadata_status = Column(String(32), default="NULL")
     metadata_aux = Column(JSON)
     metadata_system = Column(JSON)

@@ -77,8 +77,8 @@ class StarRocksConfig:
         self.starrocks_host = env.get('STARROCKS_HOST', "localhost")
         self.starrocks_username = env.get('STARROCKS_USERNAME', "root")
         self.starrocks_password = env.get('STARROCKS_PASSWORD', "root")
-        self.starrocks_schema = env.get('STARROCKS_SCHEMA', "starrocks://")
-        self.starrocks_schema_sync = env.get('STARROCKS_SCHEMA', "starrocks://")
+        self.starrocks_schema = env.get('STARROCKS_SCHEMA', "mysql+aiomysql://")
+        self.starrocks_schema_sync = env.get('STARROCKS_SCHEMA', "mysql+pymysql://")
         self.starrocks_port = env.get('STARROCKS_PORT', 9030)
         self.starrocks_database = env.get('STARROCKS_DATABASE', "tracardi")
         self.starrocks_echo = env.get('STARROCKS_ECHO', "no") == "yes"

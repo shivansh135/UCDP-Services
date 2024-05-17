@@ -24,6 +24,14 @@ class DatabaseService:
             await conn.commit()
         await engine.dispose()
 
+    async def query(self, query):
+        engine = self.client.get_engine_for_database()
+        async with engine.connect() as conn:
+            result = await conn.execute(query)
+            await conn.commit()
+        await engine.dispose()
+        return result
+
     async def exists(self, database_name: str) -> bool:
         engine = self.client.get_engine()
         async with engine.connect() as conn:
