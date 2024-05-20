@@ -6,7 +6,7 @@ from tracardi.domain.named_entity import NamedEntity
 from tracardi.domain.payload.tracker_payload import TrackerPayload
 from tracardi.exceptions.log_handler import get_logger
 from tracardi.service.cache.event_source import load_event_source
-from tracardi.service.storage.mysql.bootstrap.bridge import open_rest_source_bridge
+from tracardi.service.setup.setup_bridges import open_rest_source_bridge
 from tracardi.service.tracker_config import TrackerConfig
 from tracardi.service.utils.date import now_in_utc
 
@@ -25,7 +25,7 @@ async def _check_source_id(allowed_bridges, source_id) -> Optional[EventSource]:
             transitional=False  # ephemeral
         )
 
-    source = await load_event_source(source_id=source_id)
+    source: Optional[EventSource] = await load_event_source(source_id=source_id)
 
     if source is not None:
 
@@ -64,6 +64,9 @@ async def _validate_source(tracker_payload: TrackerPayload, allowed_bridges) -> 
     if source is None:
         raise PermissionError(f"Invalid event source `{source_id}`. Request came from IP: `{ip}` "
                          f"width payload: {tracker_payload}")
+
+    print(source.config)
+    print(tracker_payload)
 
     return source
 

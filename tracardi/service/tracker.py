@@ -10,7 +10,7 @@ from tracardi.domain.entity import Entity
 from tracardi.domain.named_entity import NamedEntity
 from tracardi.domain.session import Session
 from tracardi.domain.payload.tracker_payload import TrackerPayload
-from tracardi.service.storage.mysql.bootstrap.bridge import open_rest_source_bridge
+from tracardi.service.setup.setup_bridges import open_rest_source_bridge
 from tracardi.service.tracking.source_validation import validate_source
 from tracardi.service.tracker_config import TrackerConfig
 from tracardi.config import tracardi

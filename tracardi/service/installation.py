@@ -3,7 +3,7 @@ from uuid import uuid4
 
 from tracardi.domain.payload.tracker_payload import TrackerPayload
 from tracardi.service.license import License, MULTI_TENANT, LICENSE
-from tracardi.service.storage.mysql.bootstrap.bridge import os_default_bridges
+from tracardi.service.setup.setup_bridges import os_default_bridges
 from tracardi.service.storage.mysql.service.bridge_service import BridgeService
 from tracardi.service.storage.mysql.service.database_service import DatabaseService
 from tracardi.service.storage.mysql.service.user_service import UserService
