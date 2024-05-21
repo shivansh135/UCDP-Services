@@ -8,7 +8,7 @@ from tracardi.exceptions.exception_service import get_traceback
 from tracardi.exceptions.log_handler import get_logger
 from tracardi.service.cache.event_mapping import load_event_mapping
 from tracardi.service.cache.event_to_profile_mapping import load_event_to_profile
-from tracardi.service.change_monitoring.field_change_monitor import FieldTimestampMonitor
+from tracardi.service.change_monitoring.field_change_logger import FieldChangeLogger
 from tracardi.service.license import License
 from tracardi.service.tracking.profile_data_computation import map_event_to_profile
 from tracardi.config import tracardi
@@ -71,10 +71,12 @@ def _auto_index_default_event_type(flat_event: Dotty, flat_profile: Optional[Fla
 
 
 async def event_to_profile_mapping(flat_event: Dotty,
-                                            flat_profile: Optional[FlatProfile],
-                                            session:Session,
-                                            source: EventSource) -> Tuple[
-    Dotty, Optional[FlatProfile], Optional[FieldTimestampMonitor], Set[str]]:
+                                   flat_profile: Optional[FlatProfile],
+                                   session: Session,
+                                   source: EventSource,
+                                   field_change_logger: FieldChangeLogger
+                                   ) -> Tuple[
+    Dotty, Optional[FlatProfile], Set[str], FieldChangeLogger]:
 
     auto_merge_ids = set()
 
@@ -94,7 +96,7 @@ async def event_to_profile_mapping(flat_event: Dotty,
     # Custom event mapping
     if License.has_license():
 
-        # Map event properties to traits
+        # Map event properties to traits (Event Mapping)
         flat_event = map_event_props_to_traits(flat_event,
                                                custom_event_mapping)
 
@@ -103,23 +105,25 @@ async def event_to_profile_mapping(flat_event: Dotty,
                                                  custom_event_mapping)
 
     # Map event data to profile
-    profile_changes = None
     if flat_profile:
-        flat_profile, profile_changes = await map_event_to_profile(
+        flat_profile, field_change_logger = await map_event_to_profile(
             custom_event_to_profile_mapping_schemas,
             flat_event,
             flat_profile,
             session,
-            source)
+            field_change_logger
+        )
 
         # Add fields timestamps
         if not isinstance(flat_profile['metadata.fields'], dict):
             flat_profile['metadata.fields'] = {}
 
-        # Append field changes fo metadata.fields
-        auto_merge_ids = flat_profile.set_metadata_fields_timestamps(profile_changes)
+        field_change_logger = field_change_logger.merge(flat_profile.log)
 
-    return flat_event, flat_profile, profile_changes, auto_merge_ids
+        # Append field changes fo metadata.fields
+        auto_merge_ids = flat_profile.set_metadata_fields_timestamps(field_change_logger)
+
+    return flat_event, flat_profile, auto_merge_ids, field_change_logger
 
 
 async def make_event_from_event_payload(event_payload,
@@ -171,14 +175,16 @@ def update_event_from_request(tracker_payload: TrackerPayload, event: Event):
 
     return event
 
+
 async def compute_events(events: List[EventPayload],
                          metadata,
                          source: EventSource,
                          session: Session,
                          profile: Optional[Profile],
                          profile_less: bool,
-                         tracker_payload: TrackerPayload
-                         ) -> Tuple[List[Event], Session, Optional[Profile], Optional[FieldTimestampMonitor]]:
+                         tracker_payload: TrackerPayload,
+                         field_change_logger: FieldChangeLogger
+                         ) -> Tuple[List[Event], Session, Optional[Profile], FieldChangeLogger]:
 
 
     event_objects = []
@@ -192,7 +198,6 @@ async def compute_events(events: List[EventPayload],
 
     auto_merge_ids = set()
 
-    field_changes_monitors = []
     for event_payload in events:
 
         # For performance reasons we return flat_event and after mappings convert to event.
@@ -209,13 +214,13 @@ async def compute_events(events: List[EventPayload],
 
         if flat_event.get('metadata.valid', True) is True:
             # Run mappings for valid event. Maps properties to traits, and adds traits
-            flat_event, flat_profile, field_timestamp_monitor, _auto_merge_ids = await event_to_profile_mapping(
+            flat_event, flat_profile, _auto_merge_ids, field_change_logger = await event_to_profile_mapping(
                 flat_event,
                 flat_profile,
                 session,
-                source)
-
-            field_changes_monitors.append(field_timestamp_monitor)
+                source,
+                field_change_logger
+            )
 
             # Combine all auto merge ids
 
@@ -257,14 +262,6 @@ async def compute_events(events: List[EventPayload],
 
         event_objects.append(event)
 
-    # Add monitors
-    if field_changes_monitors:
-        field_timestamp_monitor = field_changes_monitors[0]
-        for x in field_changes_monitors[1:]:
-            field_timestamp_monitor += x
-    else:
-        field_timestamp_monitor = None
-
 
     # Recreate Profile from flat_profile, that was changed
 
@@ -298,4 +295,4 @@ async def compute_events(events: List[EventPayload],
             if not tracardi.skip_errors_on_profile_mapping:
                 raise e
 
-    return event_objects, session, profile, field_timestamp_monitor
+    return event_objects, session, profile, field_change_logger

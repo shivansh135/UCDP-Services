@@ -2,7 +2,7 @@ import asyncio
 from asyncio import Task
 from collections import defaultdict
 from time import time
-from typing import List, Tuple, Optional
+from typing import List, Tuple, Optional, Dict
 from tracardi.service.license import License
 
 from tracardi.domain.event import Event
@@ -13,6 +13,7 @@ from tracardi.service.wf.domain.debug_info import FlowDebugInfo
 from tracardi.service.wf.domain.flow_history import FlowHistory
 from tracardi.service.wf.domain.work_flow import WorkFlow
 from .debugger import Debugger
+from ..context import get_context
 from ..domain import ExtraInfo
 from tracardi.service.wf.domain.entity import Entity as WfEntity
 from ..domain.flow import Flow
@@ -208,7 +209,7 @@ class RulesEngine:
 
         post_invoke_events = {}
         flow_responses = []
-        changed_field_timestamps: List[dict] = []
+        changed_field_timestamps: Dict[str, List] = {}
         for event_type, tasks in flow_task_store.items():
             for flow_id, event_id, rule_name, task in tasks:  # type: str, str, str, Task
                 try:
@@ -220,7 +221,7 @@ class RulesEngine:
                     log_list = flow_invoke_result.log_list
                     post_invoke_event = flow_invoke_result.event
 
-                    changed_field_timestamps += flow_invoke_result.flow.get_changes()
+                    changed_field_timestamps.update(flow_invoke_result.flow.get_change_log().get_log())
 
                     flow_responses.append(flow_invoke_result.flow.response)
                     post_invoke_events[post_invoke_event.id] = post_invoke_event

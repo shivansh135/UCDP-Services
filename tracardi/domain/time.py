@@ -35,10 +35,12 @@ class ProfileVisit(BaseModel):
     def had_previous_visit(self):
         return self.current is not None
 
-    def set_visits_times(self):
+    def set_visits_times(self, field_change_logger):
         if self.had_previous_visit():
             self.last = self.current
+            field_change_logger.log('metadata.time.visit.last')
         self.current = now_in_utc()
+        field_change_logger.log('metadata.time.visit.current')
 
 
 class ProfileTime(Time):

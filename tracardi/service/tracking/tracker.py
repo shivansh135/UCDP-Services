@@ -1,5 +1,10 @@
+from typing import List
+
 import time
 
+from tracardi.config import tracardi
+from tracardi.context import get_context
+from tracardi.service.change_monitoring.field_change_logger import FieldChangeLogger
 from tracardi.service.storage.elastic.interface.event import save_events_in_db
 from tracardi.service.storage.redis_client import RedisClient
 from tracardi.service.tracking.destination.dispatcher import sync_event_destination, sync_profile_destination
@@ -13,20 +18,22 @@ from tracardi.exceptions.log_handler import get_logger
 from tracardi.service.tracker_config import TrackerConfig
 from tracardi.service.utils.getters import get_entity_id
 from tracardi.service.wf.triggers import exec_workflow
-from tracardi.service.storage.driver.elastic import field_update_log as field_update_log_db
 from tracardi.service.storage.redis.collections import Collection
 from tracardi.service.tracking.locking import Lock, async_mutex
+from com_tracardi.workers.profile_change_log import profile_change_log_worker
 
 
 logger = get_logger(__name__)
 _redis = RedisClient()
 
 
-async def os_tracker(source: EventSource,
-                     tracker_payload: TrackerPayload,
-                     tracker_config: TrackerConfig,
-                     tracking_start: float
-                     ):
+async def os_tracker(
+        field_change_logger: FieldChangeLogger,
+        source: EventSource,
+        tracker_payload: TrackerPayload,
+        tracker_config: TrackerConfig,
+        tracking_start: float
+):
     try:
 
         if not tracker_payload.events:
@@ -46,12 +53,13 @@ async def os_tracker(source: EventSource,
         async with async_mutex(profile_lock, name='lock_and_compute_data_profile'):
 
             # Lock profile and session for changes and compute data
-            profile, session, events, tracker_payload, field_timestamp_monitor = await compute_data(
+            profile, session, events, tracker_payload = await compute_data(
                 profile,
                 session,
                 tracker_payload,
                 tracker_config,
-                source
+                source,
+                field_change_logger
             )
 
             # MUST BE INSIDE MUTEX until it stores data to cache
@@ -71,15 +79,6 @@ async def os_tracker(source: EventSource,
                 # Sync save
                 await save_events_in_db(events)
 
-        # Save field change log
-        _updated_fields_log = []
-        if field_timestamp_monitor:
-            timestamp_log = field_timestamp_monitor.get_timestamps_log()
-            _updated_fields_log = timestamp_log.get_history_log()
-
-        if _updated_fields_log:
-            await field_update_log_db.upsert(_updated_fields_log)
-
         try:
 
             # Clean up so can not be used. It is already in session
@@ -97,15 +96,19 @@ async def os_tracker(source: EventSource,
                 tracker_payload.debug)
 
             # Dispatch outbound profile SYNCHRONOUSLY
-            _updated_fields_log = []
-            if field_timestamp_monitor:
-                changed_fields_monitor = field_timestamp_monitor.get_timestamps_log()
-                _updated_fields_log = changed_fields_monitor.get_history_log(add_id=False)
+            timestamp_log: List[dict] = field_change_logger.convert_to_list(
+                dict(
+                    profile_id=profile.id,
+                    source_id=source.id,
+                    session_id=session.id,
+                    request_id=get_context().id
+                )
+            )
 
             await sync_profile_destination(
                 profile,
                 session,
-                _updated_fields_log
+                timestamp_log
             )
 
             # ----------------------------------------------
@@ -114,18 +117,34 @@ async def os_tracker(source: EventSource,
             # ----------------------------------------------
 
             # MUTEX: Session and profile are saved if workflow triggered
-            profile, session, events, ux, response, wf_field_changes, is_wf_triggered = await exec_workflow(
+            # DESTINATION: Destination will be triggered if profile changes.
+            profile, session, events, ux, response, wf_changed_fields, is_wf_triggered = await exec_workflow(
                 get_entity_id(profile),
                 session,
                 events,
                 tracker_payload)
 
-            if wf_field_changes.has_changes():
-                # Dispatch outbound profile SYNCHRONOUSLY again because the profile changed
+            if is_wf_triggered and not wf_changed_fields.empty():
+
+                _changed_fields = wf_changed_fields.convert_to_list({
+                    "profile_id": profile.id,
+                    "session_id": session.id,
+                    "request_id": get_context().id
+                })
+
+                # Save changes to field log
+                if tracardi.enable_field_update_log:
+                    # Save to history if needed (DISABLE to REDO)
+                    # await profile_change_log_worker(_changed_fields)
+                    pass
+
+                # Dispatch profile changed outbound traffic if profile changed in workflow
+                # Send it SYNCHRONOUSLY
+
                 await sync_profile_destination(
                     profile,
                     session,
-                    wf_field_changes.get_history_log(add_id=False)
+                    changed_fields=_changed_fields
                 )
 
             return {

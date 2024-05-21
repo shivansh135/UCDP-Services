@@ -11,7 +11,7 @@ ctx_id: ContextVar[str] = ContextVar("request_id", default="")
 
 
 class Context:
-
+    id: Optional[str] = None
     production: bool = tracardi.version.production
     user: Optional[User] = None
     tenant: Optional[str] = None
@@ -128,12 +128,14 @@ class ContextManager(metaclass=Singleton):
 
         return context
 
-    def set(self, var, value):
+    def set(self, local: str, context: Context):
         _request_id = ctx_id.get()
+
         if self._empty():
+            context.id = _request_id
             self._store[_request_id] = {}
 
-        self._store[_request_id][var] = value
+        self._store[_request_id][local] = context
 
     def reset(self):
         _request_id = ctx_id.get()

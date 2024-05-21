@@ -5,14 +5,13 @@ from dotty_dict import Dotty
 from tracardi.domain import ExtraInfo
 from tracardi.domain.event import Event
 from tracardi.domain.event_compute import EventCompute
-from tracardi.domain.event_source import EventSource
 from tracardi.domain.event_to_profile import EventToProfile
 from tracardi.domain.profile import Profile, FlatProfile
 from tracardi.domain.session import Session
 from tracardi.exceptions.exception_service import get_traceback
 from tracardi.exceptions.log_handler import get_logger
 from tracardi.process_engine.tql.condition import Condition
-from tracardi.service.change_monitoring.field_change_monitor import FieldTimestampMonitor
+from tracardi.service.change_monitoring.field_change_logger import FieldChangeLogger
 from tracardi.service.events import get_default_mappings_for
 from tracardi.service.notation.dot_accessor import DotAccessor
 from tracardi.service.tracking.utils.function_call import default_event_call_function
@@ -28,16 +27,17 @@ APPEND = 2
 logger = get_logger(__name__)
 
 
-def update_profile_last_geo(session: Session, profile: Profile) -> Profile:
+def update_profile_last_geo(session: Session, profile: Profile, field_change_logger: FieldChangeLogger) -> Tuple[Profile,FieldChangeLogger]:
     if not session.device.geo.is_empty():
         _geo = session.device.geo
         if profile.data.devices.last.geo.is_empty() or _geo != profile.data.devices.last.geo:
             profile.data.devices.last.geo = _geo
+            field_change_logger.log('data.devices.last.geo')
             profile.set_updated()
-    return profile
+    return profile, field_change_logger
 
 
-def update_profile_email_type(profile: Profile) -> Profile:
+def update_profile_email_type(profile: Profile, field_change_logger: FieldChangeLogger) -> Tuple[Profile,FieldChangeLogger]:
     if profile.data.contact.email.main and ('email' not in profile.aux or 'free' not in profile.aux['email']):
         email_parts = profile.data.contact.email.main.split('@')
         if len(email_parts) > 1:
@@ -47,29 +47,32 @@ def update_profile_email_type(profile: Profile) -> Profile:
                 profile.aux['email'] = {}
 
             profile.aux['email']['free'] = email_domain in free_email_domains
+            field_change_logger.log('aux.email.free')
             profile.set_updated()
-    return profile
+    return profile, field_change_logger
 
 
-def update_profile_visits(session: Session, profile: Profile) -> Profile:
+def update_profile_visits(session: Session, profile: Profile, field_change_logger: FieldChangeLogger) -> Tuple[Profile,FieldChangeLogger]:
     # Calculate only on first click in visit
 
     if session.is_new():
-        profile.metadata.time.visit.set_visits_times()
+        profile.metadata.time.visit.set_visits_times(field_change_logger)
         profile.metadata.time.visit.count += 1
+        field_change_logger.log('metadata.time.visit.count')
         profile.set_updated()
 
-    return profile
+    return profile, field_change_logger
 
 
-def update_profile_time(session: Session, profile: Profile) -> Profile:
+def update_profile_time(session: Session, profile: Profile, field_change_logger: FieldChangeLogger) -> Tuple[Profile,FieldChangeLogger]:
     # Set time zone form session
     if session.context:
         try:
             profile.metadata.time.visit.tz = session.context['time']['tz']
+            field_change_logger.log('metadata.time.visit.tz')
         except KeyError:
             pass
-    return profile
+    return profile, field_change_logger
 
 
 async def _check_mapping_condition_if_met(if_statement, dot: DotAccessor):
@@ -82,7 +85,8 @@ async def map_event_to_profile(
         flat_event: Dotty,
         flat_profile: FlatProfile,
         session: Session,
-        source: EventSource) -> Tuple[FlatProfile, FieldTimestampMonitor]:
+        field_change_logger: FieldChangeLogger
+) -> Tuple[FlatProfile, FieldChangeLogger]:
 
     # Default event types mappings
 
@@ -90,19 +94,13 @@ async def map_event_to_profile(
 
     profile_updated_flag = False
 
-    profile_changes = FieldTimestampMonitor(flat_profile,
-                                            type="profile",
-                                            profile_id=flat_profile.get('id', None),
-                                            event_id=flat_event.get('id', None),
-                                            session=session,
-                                            source=source)
-
     if default_mapping_schema is not None:
         # Copy default
-        profile_changes, profile_updated_flag = copy_default_event_to_profile(
+        flat_profile, profile_updated_flag = copy_default_event_to_profile(
             default_mapping_schema,
-            profile_changes,
-            flat_event)
+            flat_profile,
+            flat_event
+        )
 
     # Custom event types mappings, filtered by event type
 
@@ -192,30 +190,30 @@ async def map_event_to_profile(
                             continue
 
                         if operation == APPEND:
-                            if profile_ref not in profile_changes:
-                                profile_changes[profile_ref] = [flat_event[event_ref]]
-                            elif isinstance(profile_changes[profile_ref], list):
-                                profile_changes[profile_ref].append(flat_event[event_ref])
-                            elif not isinstance(profile_changes[profile_ref], dict):
-                                profile_changes[profile_ref] = [profile_changes[profile_ref], flat_event[event_ref]]
+                            if profile_ref not in flat_profile:
+                                flat_profile[profile_ref] = [flat_event[event_ref]]
+                            elif isinstance(flat_profile[profile_ref], list):
+                                flat_profile[profile_ref].append(flat_event[event_ref])
+                            elif not isinstance(flat_profile[profile_ref], dict):
+                                flat_profile[profile_ref] = [flat_profile[profile_ref], flat_event[event_ref]]
                             else:
                                 raise KeyError(
-                                    f"Can not append data {flat_event[event_ref]} to {profile_changes[profile_ref]} at profile@{profile_ref}")
+                                    f"Can not append data {flat_event[event_ref]} to {flat_profile[profile_ref]} at profile@{profile_ref}")
 
                         elif operation == EQUALS_IF_NOT_EXISTS:
-                            if profile_ref not in profile_changes:
-                                profile_changes[profile_ref] = flat_event[event_ref]
-                            elif profile_changes[profile_ref] is None:
-                                profile_changes[profile_ref] = flat_event[event_ref]
-                            elif isinstance(profile_changes[profile_ref], str) :
-                                __value = profile_changes[profile_ref].strip()
+                            if profile_ref not in flat_profile:
+                                flat_profile[profile_ref] = flat_event[event_ref]
+                            elif flat_profile[profile_ref] is None:
+                                flat_profile[profile_ref] = flat_event[event_ref]
+                            elif isinstance(flat_profile[profile_ref], str) :
+                                __value = flat_profile[profile_ref].strip()
                                 if not __value:
-                                    profile_changes[profile_ref] = flat_event[event_ref]
-                            elif isinstance(profile_changes[profile_ref], (list, dict)):
-                                if not profile_changes[profile_ref]:
-                                    profile_changes[profile_ref] = flat_event[event_ref]
+                                    flat_profile[profile_ref] = flat_event[event_ref]
+                            elif isinstance(flat_profile[profile_ref], (list, dict)):
+                                if not flat_profile[profile_ref]:
+                                    flat_profile[profile_ref] = flat_event[event_ref]
                         else:
-                            profile_changes[profile_ref] = flat_event[event_ref]
+                            flat_profile[profile_ref] = flat_event[event_ref]
 
                         profile_updated_flag = True
 
@@ -249,7 +247,7 @@ async def map_event_to_profile(
         # Run only on change but there was no change
         if compute_schema.run_on_profile_change() and profile_updated_flag is False:
             # Terminate earlier
-            return flat_profile, profile_changes
+            return flat_profile, field_change_logger
 
         # Compute values
 
@@ -259,23 +257,27 @@ async def map_event_to_profile(
             computation_result = default_event_call_function(
                 compute_string,
                 event=flat_event,
-                profile=profile_changes.flat_profile)
+                profile=flat_profile)
 
             # Set property if defined
             if isinstance(profile_property, str):
-                profile_changes[profile_property] = computation_result
+                flat_profile[profile_property] = computation_result
                 profile_updated_flag = True
 
     if profile_updated_flag is True:
         flat_profile.mark_for_update()
 
-    return flat_profile, profile_changes
+    return flat_profile, field_change_logger
 
 
-def compute_profile_aux_geo_markets(profile, session, tracker_payload):
+def compute_profile_aux_geo_markets(profile, session, tracker_payload, field_change_logger: FieldChangeLogger):
     if 'language' in session.context:
         if profile:
-            profile.data.pii.language.spoken = session.context['language']
+            if isinstance(profile.data.pii.language.spoken, list) and isinstance(session.context['language'], list):
+                profile.data.pii.language.spoken  = list(set(profile.data.pii.language.spoken + session.context['language']))
+            else:
+                profile.data.pii.language.spoken = session.context['language']
+            field_change_logger.log('data.pii.language.spoken')
 
     if profile and 'geo' not in profile.aux:
         profile.aux['geo'] = {}
@@ -289,12 +291,14 @@ def compute_profile_aux_geo_markets(profile, session, tracker_payload):
                 markets += language_countries_dict[lang_code]
 
     if markets:
+        field_change_logger.log('aux.geo.markets')
         profile.aux['geo']['markets'] = markets
 
     # Continent
 
     continent = get_continent(tracker_payload)
     if continent:
+        field_change_logger.log('aux.geo.continent')
         profile.aux['geo']['continent'] = continent
 
-    return profile
+    return profile, field_change_logger

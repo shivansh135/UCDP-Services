@@ -2,6 +2,7 @@ from typing import Optional
 
 from tracardi.domain.bridges.configurable_bridges import WebHookBridge, RestApiBridge, ConfigurableBridge
 from tracardi.service.cache.event_source import load_event_source
+from tracardi.service.change_monitoring.field_change_logger import FieldChangeLogger
 from tracardi.service.license import License
 from tracardi.service.tracking.storage.profile_storage import load_profile
 from tracardi.service.utils.date import now_in_utc
@@ -150,15 +151,23 @@ class Tracker:
         if tracker_payload.source.transitional is True:
             tracker_payload.set_ephemeral()
 
+        field_change_logger = FieldChangeLogger()
+
         if License.has_license():
             result = await com_tracker(
-                source, tracker_payload,
-                self.tracker_config, tracking_start
+                field_change_logger,
+                source,
+                tracker_payload,
+                self.tracker_config,
+                tracking_start
             )
         else:
             result = await os_tracker(
-                source, tracker_payload,
-                self.tracker_config, tracking_start
+                field_change_logger,
+                source,
+                tracker_payload,
+                self.tracker_config,
+                tracking_start
             )
 
         # if result and tracardi.enable_errors_on_response:

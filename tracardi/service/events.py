@@ -6,8 +6,8 @@ from typing import Optional, Tuple
 from dotty_dict import dotty
 
 from tracardi.context import ServerContext, get_context
+from tracardi.domain.profile import FlatProfile
 from tracardi.exceptions.log_handler import get_logger
-from tracardi.service.change_monitoring.field_change_monitor import FieldTimestampMonitor
 from tracardi.service.storage.elastic.interface.event import load_unique_field_value
 from tracardi.service.string_manager import capitalize_event_type_id
 
@@ -116,7 +116,9 @@ def _append_value(values, value):
     return values
 
 
-def copy_default_event_to_profile(copy_schema: dict, profile_changes: FieldTimestampMonitor, flat_event: dotty) -> Tuple[FieldTimestampMonitor, bool]:
+def copy_default_event_to_profile(copy_schema: dict, flat_profile: FlatProfile, flat_event: dotty) -> Tuple[
+    FlatProfile, bool]:
+
     profile_updated_flag = False
 
     if copy_schema is not None:
@@ -136,69 +138,69 @@ def copy_default_event_to_profile(copy_schema: dict, profile_changes: FieldTimes
                             value_to_be_appended = flat_event[event_path]
 
                         # Convert profile property to list if string, int, etc.
-                        if not isinstance(profile_changes[profile_path], list):
+                        if not isinstance(flat_profile[profile_path], list):
                             # Must have some value, not None, ""
-                            if profile_changes[profile_path]:
-                                profile_changes[profile_path] = [profile_changes[profile_path]]
+                            if flat_profile[profile_path]:
+                                flat_profile[profile_path] = [flat_profile[profile_path]]
 
-                        if profile_path not in profile_changes or profile_changes[profile_path] is None:
-                            profile_changes[profile_path] = _append_value(values=[],
-                                                                          value=value_to_be_appended)
+                        if profile_path not in flat_profile or flat_profile[profile_path] is None:
+                            flat_profile[profile_path] = _append_value(values=[],
+                                                                       value=value_to_be_appended)
 
-                        elif isinstance(profile_changes[profile_path], list):
-                            profile_changes[profile_path] = _append_value(values=profile_changes[profile_path],
-                                                                          value=value_to_be_appended)
+                        elif isinstance(flat_profile[profile_path], list):
+                            flat_profile[profile_path] = _append_value(values=flat_profile[profile_path],
+                                                                       value=value_to_be_appended)
                         else:
                             raise KeyError(
-                                f"Can not append data {flat_event[event_path]} to {profile_changes[profile_path]} "
+                                f"Can not append data {flat_event[event_path]} to {flat_profile[profile_path]} "
                                 f"at profile@{profile_path}. Unexpected type {type(flat_event[event_path])}")
 
                     elif operation == 'equals_if_not_exists':
-                        if profile_path not in profile_changes:
-                            profile_changes[profile_path] = flat_event[event_path]
+                        if profile_path not in flat_profile:
+                            flat_profile[profile_path] = flat_event[event_path]
                     elif operation == 'delete':
-                        if profile_path in profile_changes:
-                            profile_changes[profile_path] = None
+                        if profile_path in flat_profile:
+                            flat_profile[profile_path] = None
                     elif operation == '+':
-                        if profile_path in profile_changes:
+                        if profile_path in flat_profile:
                             try:
-                                if profile_changes[profile_path] is None:
-                                    profile_changes[profile_path] = 0
-                                profile_changes[profile_path] += float(flat_event[event_path])
+                                if flat_profile[profile_path] is None:
+                                    flat_profile[profile_path] = 0
+                                flat_profile[profile_path] += float(flat_event[event_path])
                             except Exception:
                                 raise AssertionError(
-                                    f"Can not add data {flat_event[event_path]} to {profile_changes[profile_path]} "
+                                    f"Can not add data {flat_event[event_path]} to {flat_profile[profile_path]} "
                                     f"at profile@{profile_path}")
                     elif operation == '-':
-                        if profile_path in profile_changes:
+                        if profile_path in flat_profile:
                             try:
-                                if profile_changes[profile_path] is None:
-                                    profile_changes[profile_path] = 0
-                                profile_changes[profile_path] = profile_changes[profile_path] - float(flat_event[event_path])
+                                if flat_profile[profile_path] is None:
+                                    flat_profile[profile_path] = 0
+                                flat_profile[profile_path] = flat_profile[profile_path] - float(flat_event[event_path])
                             except Exception:
                                 raise AssertionError(
-                                    f"Can not add subtract {flat_event[event_path]} to {profile_changes[profile_path]} "
+                                    f"Can not add subtract {flat_event[event_path]} to {flat_profile[profile_path]} "
                                     f"at profile@{profile_path}")
 
                     else:
-                        profile_changes[profile_path] = flat_event[event_path]
+                        flat_profile[profile_path] = flat_event[event_path]
             elif isinstance(event_path, int) or isinstance(event_path, float):
-                if profile_path in profile_changes:
+                if profile_path in flat_profile:
                     if operation in ['increment', 'decrement']:
                         try:
-                            if profile_changes[profile_path] is None:
-                                profile_changes[profile_path] = 0
+                            if flat_profile[profile_path] is None:
+                                flat_profile[profile_path] = 0
 
                             if operation == 'increment':
-                                profile_changes[profile_path] = profile_changes[profile_path] + float(event_path)
+                                flat_profile[profile_path] = flat_profile[profile_path] + float(event_path)
                             else:
-                                profile_changes[profile_path] = profile_changes[profile_path] - float(event_path)
+                                flat_profile[profile_path] = flat_profile[profile_path] - float(event_path)
 
                             profile_updated_flag = True
 
                         except Exception:
                             raise AssertionError(
                                 f"Can not add increment/decrement {flat_event[event_path]} "
-                                f"to {profile_changes[profile_path]} at profile@{profile_path}")
+                                f"to {flat_profile[profile_path]} at profile@{profile_path}")
 
-    return profile_changes, profile_updated_flag
+    return flat_profile, profile_updated_flag

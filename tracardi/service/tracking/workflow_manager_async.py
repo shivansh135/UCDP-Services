@@ -1,6 +1,6 @@
 from uuid import uuid4
 from dataclasses import dataclass
-from typing import List, Optional, Tuple
+from typing import List, Optional, Tuple, Dict
 
 from tracardi.domain import ExtraInfo
 from tracardi.domain.named_entity import NamedEntity
@@ -8,7 +8,6 @@ from tracardi.domain.rule import Rule
 
 from tracardi.config import tracardi
 from tracardi.process_engine.debugger import Debugger
-from tracardi.service.change_monitoring.field_change_monitor import FieldChangeTimestampManager
 from tracardi.exceptions.log_handler import get_logger
 from tracardi.exceptions.exception_service import get_traceback
 from tracardi.domain.event import Event
@@ -33,7 +32,7 @@ class TrackerResult:
     wf_triggered: bool
     tracker_payload: TrackerPayload
     events: List[Event]
-    changed_field_timestamps: FieldChangeTimestampManager
+    changed_field_timestamps: Dict[str, List]
     session: Optional[Session] = None
     profile: Optional[Profile] = None
     response: Optional[dict] = None
@@ -59,12 +58,11 @@ class WorkflowManagerAsync:
 
     def __init__(self,
                  tracker_payload: TrackerPayload,
-                 field_timestamps: FieldChangeTimestampManager,
                  profile: Optional[Profile] = None,
                  session: Optional[Session] = None
                  ):
 
-        self.field_timestamps = field_timestamps
+        self.field_timestamps: Dict[str, List] = {}
         self.tracker_payload = tracker_payload
         self.profile = profile
         self.session = session
@@ -165,7 +163,7 @@ class WorkflowManagerAsync:
                     post_invoke_events = rule_invoke_result.post_invoke_events
                     invoked_rules = rule_invoke_result.invoked_rules
                     flow_responses = FlowResponses(rule_invoke_result.flow_responses)
-                    self.field_timestamps.merge(rule_invoke_result.changes_timestamps)
+                    self.field_timestamps.update(rule_invoke_result.changes_timestamps)
 
                     # Profile and session can change inside workflow
                     # Check if it should not be replaced.

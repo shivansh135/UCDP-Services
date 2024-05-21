@@ -17,7 +17,7 @@ from .time import ProfileTime
 from .value_object.operation import Operation
 from .value_object.storage_info import StorageInfo
 from ..config import tracardi
-from ..service.change_monitoring.field_change_monitor import FieldChangeTimestampManager, FieldTimestampMonitor
+from ..service.change_monitoring.field_change_logger import FieldChangeLogger
 from ..service.dot_notation_converter import DotNotationConverter
 from .profile_stats import ProfileStats
 from ..service.utils.date import now_in_utc
@@ -163,9 +163,9 @@ class Profile(PrimaryEntity):
 
         return None
 
-    def set_metadata_fields_timestamps(self, field_timestamp_manager: FieldChangeTimestampManager) -> Set[str]:
+    def set_metadata_fields_timestamps(self, field_timestamp_manager: Dict[str, List]) -> Set[str]:
         added_hashed_ids = set()
-        for flat_field, timestamp_data in field_timestamp_manager.get_timestamps():
+        for flat_field, timestamp_data in field_timestamp_manager.items():
             self.metadata.fields[flat_field] = timestamp_data
             # If enabled hash emails and phone on field change
             if tracardi.is_apm_on():
@@ -360,6 +360,19 @@ class Profile(PrimaryEntity):
 
 class FlatProfile(Dotty):
 
+    def __init__(self, dictionary, *args, **kwargs):
+        super().__init__(dictionary)
+        self.log = FieldChangeLogger()
+
+    def __setitem__(self, key, value):
+        old_value = self.get(key, None)
+        super().__setitem__(key, value)
+        # Ignore
+        ignore = ('metadata.fields', 'operation')
+        if not key.startswith(ignore):
+            self.log.log(key, old_value)
+
+
     def add_auto_merge_hashed_id(self, flat_field: str) -> Optional[str]:
         field_closure = FLAT_PROFILE_MAPPING.get(flat_field, None)
         if field_closure:
@@ -388,9 +401,10 @@ class FlatProfile(Dotty):
 
         return None
 
-    def set_metadata_fields_timestamps(self, field_timestamp_manager: FieldTimestampMonitor) -> Set[str]:
+    def set_metadata_fields_timestamps(self, field_timestamp_manager: FieldChangeLogger) -> Set[str]:
         added_ids = set()
-        for flat_field, timestamp_data in field_timestamp_manager.get_timestamps():  # type: str, list
+        # Iterate and set new values. Leave old intact.
+        for flat_field, timestamp_data in field_timestamp_manager.get_log().items():  # type: str, list
             self['metadata.fields'][flat_field] = timestamp_data
             # If enabled hash emails and phone on field change
             if tracardi.is_apm_on():
@@ -440,3 +454,7 @@ class FlatProfile(Dotty):
     def mark_for_update(self):
         self['operation.update'] = True
         self['metadata.time.update'] = now_in_utc()
+
+
+    def is_new(self) -> bool:
+        return self['operation.new']

@@ -1,11 +1,10 @@
 from typing import Tuple, List, Optional
 
-
 from tracardi.config import tracardi
 from tracardi.domain.event import Event
 from tracardi.domain.profile import Profile
 from tracardi.domain.session import Session
-from tracardi.service.change_monitoring.field_change_monitor import FieldTimestampMonitor
+from tracardi.service.change_monitoring.field_change_logger import FieldChangeLogger
 from tracardi.service.license import License
 from tracardi.service.tracking.ephemerals import remove_ephemeral_data
 from tracardi.service.tracking.event_data_computation import compute_events
@@ -27,9 +26,10 @@ if License.has_license():
 async def _compute(source,
                    profile: Optional[Profile],
                    session: Optional[Session],
-                   tracker_payload: TrackerPayload
+                   tracker_payload: TrackerPayload,
+                   field_change_logger: FieldChangeLogger
                    ) -> Tuple[
-    Optional[Profile], Optional[Session], List[Event], TrackerPayload, Optional[FieldTimestampMonitor]]:
+    Optional[Profile], Optional[Session], List[Event], TrackerPayload]:
     if profile is not None:
 
         if License.has_license():
@@ -56,19 +56,19 @@ async def _compute(source,
         # Profile computation
 
         # Compute Profile GEO Markets and continent
-        profile = compute_profile_aux_geo_markets(profile, session, tracker_payload)
+        profile, field_change_logger = compute_profile_aux_geo_markets(profile, session, tracker_payload, field_change_logger)
 
         # Update profile last geo with session device geo
-        profile = update_profile_last_geo(session, profile)
+        profile, field_change_logger = update_profile_last_geo(session, profile, field_change_logger)
 
         # Update email type
-        profile = update_profile_email_type(profile)
+        profile, field_change_logger = update_profile_email_type(profile, field_change_logger)
 
         # Update visits
-        profile = update_profile_visits(session, profile)
+        profile, field_change_logger = update_profile_visits(session, profile, field_change_logger)
 
         # Update profile time zone
-        profile = update_profile_time(session, profile)
+        profile, field_change_logger = update_profile_time(session, profile, field_change_logger)
 
     # Updates/Mutations of tracker_payload and session
 
@@ -84,19 +84,20 @@ async def _compute(source,
 
     # Function compute_events also maps events to profile
 
-    events, session, profile, field_timestamp_monitor = await compute_events(
+    events, session, profile, field_change_logger = await compute_events(
         tracker_payload.events,  # All events with system events, and validation information
         tracker_payload.metadata,
         source,
         session,
         profile,  # Profile gets converted to FlatProfile
         tracker_payload.profile_less,
-        tracker_payload
+        tracker_payload,
+        field_change_logger
     )
 
     # Caution: After clear session can become None if set sessionSave = False
 
-    return profile, session, events, tracker_payload, field_timestamp_monitor
+    return profile, session, events, tracker_payload
 
 
 async def compute_data(
@@ -104,8 +105,9 @@ async def compute_data(
         session: Optional[Session],
         tracker_payload: TrackerPayload,
         tracker_config: TrackerConfig,
-        source: EventSource) -> Tuple[
-    Profile, Optional[Session], List[Event], TrackerPayload, Optional[FieldTimestampMonitor]]:
+        source: EventSource,
+        field_change_logger: FieldChangeLogger) -> Tuple[
+    Profile, Optional[Session], List[Event], TrackerPayload]:
 
     # We need profile and session before async
 
@@ -131,13 +133,14 @@ async def compute_data(
         if session.app.bot and tracardi.disallow_bot_traffic:
             raise PermissionError(f"Traffic from bot is not allowed.")
 
-    profile, session, events, tracker_payload, field_timestamp_monitor = await _compute(
+    profile, session, events, tracker_payload = await _compute(
         source,
         profile,
         session,
-        tracker_payload)
+        tracker_payload,
+        field_change_logger)
 
     # Removes data that should not be saved
     profile, session, events = remove_ephemeral_data(tracker_payload, profile, session, events)
 
-    return profile, session, events, tracker_payload, field_timestamp_monitor
+    return profile, session, events, tracker_payload
