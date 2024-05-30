@@ -4,6 +4,7 @@ from pydantic import BaseModel, PrivateAttr
 
 from tracardi.domain import ExtraInfo
 from tracardi.domain.storage_record import RecordMetadata, StorageRecord
+from tracardi.domain.time import Time
 from tracardi.domain.value_object.storage_info import StorageInfo
 from tracardi.exceptions.log_handler import get_logger
 from tracardi.protocol.operational import Operational
@@ -107,6 +108,8 @@ class Entity(Creatable):
     def __eq__(self, other):
         return self.id == other.id if isinstance(other, Entity) else False
 
+class DefaultEntity(Entity):
+    metadata: Optional[Time] = None
 
 class PrimaryEntity(Entity):
     primary_id: Optional[str] = None

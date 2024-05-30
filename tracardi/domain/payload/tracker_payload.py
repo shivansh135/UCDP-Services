@@ -26,7 +26,7 @@ from ..identification_point import IdentificationPoint
 from ..payload.event_payload import EventPayload
 from ..session import Session
 from ..time import Time
-from ..entity import Entity, PrimaryEntity
+from ..entity import Entity, PrimaryEntity, DefaultEntity
 from ..profile import Profile
 
 from ...service.storage.mysql.mapping.identification_point_mapping import map_to_identification_point
@@ -62,7 +62,7 @@ class TrackerPayload(BaseModel):
     _user_agent: Optional[UserAgent] = PrivateAttr(None)
 
     source: Union[EventSource, Entity]  # When read from a API then it is Entity then is replaced by EventSource
-    session: Optional[Entity] = None
+    session: Optional[Union[DefaultEntity,Entity]] = None
 
     metadata: Optional[EventPayloadMetadata] = None
     profile: Optional[PrimaryEntity] = None
@@ -266,6 +266,23 @@ class TrackerPayload(BaseModel):
     def is_debugging_on(self) -> bool:
         return tracardi.track_debug and self.is_on('debugger', default=False)
 
+    def create_default_session(self) -> Session:
+
+        if not self.session.id:
+            self.session.id = str(uuid4())
+
+        session = Session.new(id=self.session.id)
+
+        if self.session.metadata:
+            if self.session.metadata.insert:
+                session.metadata.time.insert = self.session.metadata.insert
+            if self.session.metadata.update:
+                session.metadata.time.update = self.session.metadata.update
+            if self.session.metadata.create:
+                session.metadata.time.create = self.session.metadata.create
+
+        return session
+
     async def get_static_profile_and_session(
             self,
             session: Session,
@@ -290,7 +307,7 @@ class TrackerPayload(BaseModel):
 
             # Create empty session if the session id does nto point to any session in database.
             if session is None:
-                session = Session.new(id=self.session.id)
+                session = self.create_default_session()
 
                 if isinstance(session.context, dict):
                     session.context.update(self.context)
@@ -400,7 +417,7 @@ class TrackerPayload(BaseModel):
 
             is_new_session = True
 
-            session = Session.new(id=self.session.id)
+            session = self.create_default_session()
 
             logger.debug("New session is to be created with id {}".format(session.id))
 

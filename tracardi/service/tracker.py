@@ -74,7 +74,7 @@ class Tracker:
 
                     # If no session create one
                     if tracker_payload.session is None:
-                        tracker_payload.session = Session.new()
+                        tracker_payload.session = tracker_payload.create_default_session()
                         tracker_payload.session.profile = Entity(id=referred_profile_id)
 
                 else:
