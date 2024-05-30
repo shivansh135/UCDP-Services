@@ -113,3 +113,4 @@ class DefaultEntity(Entity):
 
 class PrimaryEntity(Entity):
     primary_id: Optional[str] = None
+    metadata: Optional[Time] = None

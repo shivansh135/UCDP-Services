@@ -268,12 +268,12 @@ class TrackerPayload(BaseModel):
 
     def create_default_session(self) -> Session:
 
-        if not self.session.id:
+        if not self.session or not self.session.id:
             self.session.id = str(uuid4())
 
         session = Session.new(id=self.session.id)
 
-        if self.session.metadata:
+        if self.session and self.session.metadata:
             if self.session.metadata.insert:
                 session.metadata.time.insert = self.session.metadata.insert
             if self.session.metadata.update:
@@ -282,6 +282,27 @@ class TrackerPayload(BaseModel):
                 session.metadata.time.create = self.session.metadata.create
 
         return session
+
+    def create_default_profile(self, id: Optional[str] = None) -> Profile:
+
+        if id:
+            profile_id = id
+        elif self.profile and self.profile.id:
+            profile_id = self.profile.id
+        else:
+            profile_id = str(uuid4())
+
+        profile = Profile.new(id=profile_id)
+
+        if self.profile and self.profile.metadata:
+            if self.profile.metadata.insert:
+                profile.metadata.time.insert = self.profile.metadata.insert
+            if self.profile.metadata.update:
+                profile.metadata.time.update = self.profile.metadata.update
+            if self.profile.metadata.create:
+                profile.metadata.time.create = self.profile.metadata.create
+
+        return profile
 
     async def get_static_profile_and_session(
             self,
@@ -303,7 +324,7 @@ class TrackerPayload(BaseModel):
 
             # Create empty profile if the profile id does nto point to any profile in database.
             if not profile:
-                profile = Profile.new(id=self.profile.id)
+                profile = self.create_default_profile()
 
             # Create empty session if the session id does nto point to any session in database.
             if session is None:
@@ -444,7 +465,7 @@ class TrackerPayload(BaseModel):
 
                         if profile_fields:
                             profile = await ProfileMerger.invoke_merge_profile(
-                                Profile.new(),
+                                self.create_default_profile(),
                                 merge_by=profile_fields,
                                 limit=1000)
 
@@ -456,7 +477,7 @@ class TrackerPayload(BaseModel):
 
                     if profile is None:
                         # Create empty default profile generate profile_id
-                        profile = Profile.new()
+                        profile = self.create_default_profile()
 
                         # Create new profile
                         is_new_profile = True
@@ -476,7 +497,7 @@ class TrackerPayload(BaseModel):
                         # Profile id delivered but profile does not exist in storage.
                         # ID was forged
 
-                        profile = Profile.new()
+                        profile = self.create_default_profile()
 
                         # Create new profile
                         is_new_profile = True
@@ -539,7 +560,7 @@ class TrackerPayload(BaseModel):
                 if profile is None:
                     # ID exists but profile not exist in storage.
 
-                    profile = Profile.new()
+                    profile = self.create_default_profile()
 
                     # Create new profile
                     is_new_profile = True

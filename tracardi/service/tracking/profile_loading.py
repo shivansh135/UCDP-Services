@@ -32,7 +32,7 @@ async def _load_profile_and_deduplicate(
     # Static profiles can be None as they need to be created if does not exist.
     # Static means the profile id was given in the track payload
 
-    profile = Profile.new(id=tracker_payload.profile.id)
+    profile = tracker_payload.create_default_profile()
     # This is new profile as we could not load it.
     profile.set_new()
     profile.set_updated(False)
