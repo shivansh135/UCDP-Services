@@ -1,4 +1,4 @@
-from typing import Optional, TypeVar, Type, Set
+from typing import Optional, TypeVar, Type, Set, List
 from uuid import uuid4
 from pydantic import BaseModel, PrivateAttr
 
@@ -114,3 +114,4 @@ class DefaultEntity(Entity):
 class PrimaryEntity(Entity):
     primary_id: Optional[str] = None
     metadata: Optional[Time] = None
+    ids: Optional[List[str]] = None

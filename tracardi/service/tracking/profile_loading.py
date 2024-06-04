@@ -83,4 +83,15 @@ async def load_profile_and_session(
     if profile is not None:
         profile.create_auto_merge_hashed_ids()
 
+        # Add Ids from payload
+        if tracker_payload.profile.ids:
+            payload_ids = set(tracker_payload.profile.ids)
+            profile_ids = set(profile.ids) if profile.ids else set()
+            payload_ids.update(profile_ids)
+            # Check if update needed
+            if profile_ids != payload_ids:
+                # Something was added
+                profile.ids = list(payload_ids)
+                profile.mark_for_update()
+
     return profile, session
