@@ -62,7 +62,7 @@ class TrackerPayload(BaseModel):
     _user_agent: Optional[UserAgent] = PrivateAttr(None)
 
     source: Union[EventSource, Entity]  # When read from a API then it is Entity then is replaced by EventSource
-    session: Optional[Union[DefaultEntity,Entity]] = None
+    session: Optional[Union[DefaultEntity, Entity]] = None
 
     metadata: Optional[EventPayloadMetadata] = None
     profile: Optional[PrimaryEntity] = None
@@ -90,7 +90,8 @@ class TrackerPayload(BaseModel):
         if 'scheduledFlowId' in self.options and 'scheduledNodeId' in self.options:
             if isinstance(self.options['scheduledFlowId'], str) and isinstance(self.options['scheduledNodeId'], str):
                 if len(self.events) > 1:
-                    raise ValueError(f"Scheduled events may have only one event per tracker payload. Expected one event got {self.get_event_types()}")
+                    raise ValueError(
+                        f"Scheduled events may have only one event per tracker payload. Expected one event got {self.get_event_types()}")
                 if self.source.id[0] != "@":
                     raise ValueError("Scheduled events must be send via internal scheduler event source.")
                 self._scheduled_flow_id = self.options['scheduledFlowId']
@@ -115,7 +116,7 @@ class TrackerPayload(BaseModel):
             except Exception:
                 pass
 
-    def get_user_agent(self)  -> Optional[UserAgent]:
+    def get_user_agent(self) -> Optional[UserAgent]:
         return self._user_agent
 
     def is_bot(self) -> bool:
@@ -268,7 +269,10 @@ class TrackerPayload(BaseModel):
 
     def create_default_session(self) -> Session:
 
-        if not self.session or not self.session.id:
+        if not self.session:
+            self.session = DefaultEntity(id=str(uuid4()))
+
+        if not self.session.id:
             self.session.id = str(uuid4())
 
         session = Session.new(id=self.session.id)
@@ -491,7 +495,7 @@ class TrackerPayload(BaseModel):
                     profile: Optional[Profile] = await profile_loader(
                         self,
                         False  # Not static profile ID
-                        )
+                    )
 
                     if profile is None:
                         # Profile id delivered but profile does not exist in storage.
