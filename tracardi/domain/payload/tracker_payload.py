@@ -522,7 +522,7 @@ class TrackerPayload(BaseModel):
         else:
 
             # Get flag from existing session
-            is_new_session = session.operation.new
+            is_new_session = session.operation.new if session.operation else True
 
             logger.debug("Session exists with id {}".format(session.id))
 
