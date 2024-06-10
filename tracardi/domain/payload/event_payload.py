@@ -164,20 +164,22 @@ class EventPayload(BaseModel):
 
             hit = Hit()
 
-            try:
-                hit.name = self.context['page']['title']
-            except KeyError:
-                pass
+            if isinstance(self.context, dict) and 'page' in self.context:
 
-            try:
-                hit.url = self.context['page']['url']
-            except KeyError:
-                pass
+                try:
+                    hit.name = self.context['page']['title']
+                except (KeyError, TypeError):
+                    pass
 
-            try:
-                hit.referer = self.context['page']['referer']['host']
-            except KeyError:
-                pass
+                try:
+                    hit.url = self.context['page']['url']
+                except (KeyError, TypeError):
+                    pass
+
+                try:
+                    hit.referer = self.context['page']['referer']['host']
+                except (KeyError, TypeError):
+                    pass
 
             event_type = self.type.strip()
             event = Event(

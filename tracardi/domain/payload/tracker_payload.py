@@ -435,7 +435,6 @@ class TrackerPayload(BaseModel):
             fp_profile_id = fp.get_profile_id_by_device_finger_print()
 
         is_new_profile = False
-        is_new_session = False
         profile = None
 
         if session is None:  # loaded session is empty
@@ -521,6 +520,9 @@ class TrackerPayload(BaseModel):
                 session.profile = Entity(id=profile.id)
 
         else:
+
+            # Get flag from existing session
+            is_new_session = session.operation.new
 
             logger.debug("Session exists with id {}".format(session.id))
 
