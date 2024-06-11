@@ -20,7 +20,6 @@ from tracardi.service.utils.getters import get_entity_id
 from tracardi.service.wf.triggers import exec_workflow
 from tracardi.service.storage.redis.collections import Collection
 from tracardi.service.tracking.locking import Lock, async_mutex
-from com_tracardi.workers.profile_change_log import profile_change_log_worker
 
 
 logger = get_logger(__name__)
