@@ -17,7 +17,7 @@ from user_agents import parse
 from tracardi.config import tracardi
 from .. import ExtraInfo
 from ...exceptions.log_handler import get_logger
-
+from ...service.decorators.function_memory_cache import async_cache_for
 from ...service.license import License, LICENSE
 from ...service.profile_merger import ProfileMerger
 from ..event_metadata import EventPayloadMetadata
@@ -371,6 +371,7 @@ class TrackerPayload(BaseModel):
             return True
         return self.profile.id != refer_profile_id.strip()
 
+    @async_cache_for(30, use_context=True)
     async def list_identification_points(self):
         return list(await self.get_identification_points())
 
