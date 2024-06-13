@@ -277,7 +277,7 @@ class TrackerPayload(BaseModel):
 
         session = Session.new(id=self.session.id)
 
-        if self.session and self.session.metadata:
+        if self.session and isinstance(self.session, DefaultEntity) and self.session.metadata:
             if self.session.metadata.insert:
                 session.metadata.time.insert = self.session.metadata.insert
             if self.session.metadata.update:
