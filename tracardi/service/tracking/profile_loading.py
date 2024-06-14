@@ -1,5 +1,6 @@
 from typing import Optional, Tuple
 
+from tracardi.domain.entity import PrimaryEntity
 from tracardi.domain.session import Session
 from tracardi.exceptions.log_handler import get_logger
 from tracardi.service.tracker_config import TrackerConfig
@@ -84,7 +85,7 @@ async def load_profile_and_session(
         profile.create_auto_merge_hashed_ids()
 
         # Add Ids from payload
-        if tracker_payload.profile.ids:
+        if isinstance(tracker_payload.profile, PrimaryEntity) and tracker_payload.profile.ids:
             payload_ids = set(tracker_payload.profile.ids)
             profile_ids = set(profile.ids) if profile.ids else set()
             payload_ids.update(profile_ids)
