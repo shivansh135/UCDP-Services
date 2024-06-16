@@ -1,4 +1,5 @@
 import asyncio
+import elasticsearch
 
 from typing import List, Optional, Dict
 from pydantic import BaseModel
@@ -139,8 +140,10 @@ class InstallationStatus(metaclass=Singleton):
 
         tenant = context.tenant
         if tenant not in self._installed_tenants or self._installed_tenants[tenant] is False:
-            self._installed_tenants[tenant] = await self.es.exists_index_template(template)
-
+            try:
+                self._installed_tenants[tenant] = await self.es.exists_index_template(template)
+            except elasticsearch.exceptions.ConnectionError:
+                return False
         return self._installed_tenants[tenant]
 
 
