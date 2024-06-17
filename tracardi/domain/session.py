@@ -144,6 +144,16 @@ class Session(Entity):
     def has_data_to_geo_locate(self) -> bool:
         return self.device.ip and self.device.ip != '0.0.0.0' and self.device.geo.is_empty()
 
+    def get_ip(self) -> Optional[str]:
+        try:
+            if ',' not in self.device.ip:
+                return self.device.ip
+
+            ips = self.device.ip.split(',')
+            return ips[0]
+        except Exception:
+            return None
+
     @staticmethod
     def storage_info() -> StorageInfo:
         return StorageInfo(

@@ -16,6 +16,7 @@ from user_agents import parse
 
 from tracardi.config import tracardi
 from .. import ExtraInfo
+from ..request import Request
 from ...exceptions.log_handler import get_logger
 from ...service.decorators.function_memory_cache import async_cache_for
 from ...service.license import License, LICENSE
@@ -120,7 +121,7 @@ class TrackerPayload(BaseModel):
         return self._user_agent
 
     def is_bot(self) -> bool:
-        if self.request.get('headers', {}).get('origin', '') == 'https://gtm-msr.appspot.com':
+        if Request(self.request).get_origin() == 'https://gtm-msr.appspot.com':
             return True
         _user_agent = self.get_user_agent()
         if _user_agent:
@@ -228,10 +229,7 @@ class TrackerPayload(BaseModel):
             return None
 
     def get_ip(self) -> Optional[str]:
-        try:
-            return self.request['headers']['x-forwarded-for']
-        except KeyError:
-            return None
+        return Request(self.request).get_ip()
 
     def get_resolution(self) -> Optional[str]:
         try:

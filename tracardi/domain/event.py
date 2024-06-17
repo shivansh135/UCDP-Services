@@ -11,6 +11,7 @@ from .marketing import UTM
 from .named_entity import NamedEntity
 from .profile_data import ProfileLoyalty, ProfileJob, ProfilePreference, ProfileMedia, \
     ProfileIdentifier, ProfileContact, ProfilePII
+from .request import Request
 from .value_object.operation import RecordFlag
 from .value_object.storage_info import StorageInfo
 from ..service.string_manager import capitalize_event_type_id
@@ -213,9 +214,7 @@ class Event(NamedEntity):
             self.journey = event.journey
 
     def get_ip(self):
-        if 'headers' in self.request and 'x-forwarded-for' in self.request['headers']:
-            return self.request['headers']['x-forwarded-for']
-        return None
+        return Request(self.request).get_ip()
 
     def is_persistent(self) -> bool:
         if 'save' in self.config and isinstance(self.config['save'], bool):
