@@ -4,7 +4,7 @@ from typing import Optional
 class Request(dict):
 
     def get_ip(self) -> Optional[str]:
-        if 'headers' in self and 'x-forwarded-for' in self['headers']:
+        try:
             forwarded_id = self['headers']['x-forwarded-for']
 
             if ',' not in forwarded_id:
@@ -12,8 +12,8 @@ class Request(dict):
 
             all_ips = forwarded_id.split(',')
             return all_ips[0]  # First IP should be correct, other ips could be vpns or cloudflare
-
-        return None
+        except Exception:
+            return None
 
     def get_origin(self) -> str:
         return self.get('headers', {}).get('origin', '')
