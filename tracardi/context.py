@@ -156,13 +156,15 @@ class ServerContext:
         self.context = context
 
     def __enter__(self):
-        self.ctx_handler = ctx_id.set(str(uuid4()))
-        self.cm.set("request-context", self.context)
+        if self.context is not None:
+            self.ctx_handler = ctx_id.set(str(uuid4()))
+            self.cm.set("request-context", self.context)
         return self
 
     def __exit__(self, exc_type, exc_val, exc_tb):
-        self.cm.reset()
-        ctx_id.reset(self.ctx_handler)
+        if self.context is not None:
+            self.cm.reset()
+            ctx_id.reset(self.ctx_handler)
 
     def get_context(self) -> Context:
         return self.cm.get("request-context")
