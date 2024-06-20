@@ -123,7 +123,7 @@ def register() -> Plugin:
             ]),
 
             manual="smtp_connector_action",
-            version='0.7.3',
+            version='0.9.0',
             license="MIT + CC",
             author="iLLu, Risto Kowaczewski"
 

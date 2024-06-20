@@ -82,7 +82,9 @@ def get_resource_types() -> List[ResourceSettings]:
                 "smtp": "<smpt-server-host>",
                 "port": "<port>",
                 "username": "<username>",
-                "password": "<password>"
+                "password": "<password>",
+                "ssl": False,
+                "start_tls": True
             }
         ),
         ResourceSettings(
@@ -93,7 +95,9 @@ def get_resource_types() -> List[ResourceSettings]:
                 "host": "<imap-server-host>",
                 "port": "<port>",
                 "username": "<username>",
-                "password": "<password>"
+                "password": "<password>",
+                "ssl": False,
+                "start_tls": True
             }
         ),
         ResourceSettings(

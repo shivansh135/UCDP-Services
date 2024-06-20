@@ -15,13 +15,18 @@ class PostMan:
     def _connect(self) -> smtplib.SMTP:
 
         """Creating a session with SMTP protocol"""
-        session = smtplib.SMTP(self.server.smtp, self.server.port, timeout=self.server.timeout)
-        session.ehlo()
-        session.starttls()
+        if self.server.ssl is True:
+            return smtplib.SMTP_SSL(self.server.smtp, self.server.port, timeout=self.server.timeout)
 
-        """Entering login and password"""
-        session.login(self.server.username, self.server.password)
-        return session
+        return smtplib.SMTP(self.server.smtp, self.server.port, timeout=self.server.timeout)
+
+    def _setup(self, server):
+        if self.server.start_tls is True:
+            server.starttls()
+        server.ehlo()
+
+    def _login(self, server):
+        server.login(self.server.username, self.server.password)
 
     @staticmethod
     def _prepare_message(mail: Message) -> MIMEMultipart:
@@ -45,7 +50,8 @@ class PostMan:
         return message_container
 
     def send(self, message: Message):
-        session = self._connect()
-        body = self._prepare_message(message).as_string()
-        session.sendmail(message.send_from, message.send_to, body)
-        session.quit()
+        with self._connect() as session:
+            self._setup(session)
+            self._login(session)
+            body = self._prepare_message(message).as_string()
+            session.sendmail(message.send_from, message.send_to, body)

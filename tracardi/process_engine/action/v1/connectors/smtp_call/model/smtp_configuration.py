@@ -11,7 +11,9 @@ class SmtpConfiguration(BaseModel):
     port: int
     username: str
     password: str
-    timeout: int = 15
+    timeout: Optional[int] = 15
+    ssl: Optional[bool] = False
+    start_tls: Optional[bool] = True
 
 
 class Message(BaseModel):
