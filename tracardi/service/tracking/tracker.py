@@ -97,9 +97,9 @@ async def os_tracker(
             # Dispatch outbound profile SYNCHRONOUSLY
             timestamp_log: List[dict] = field_change_logger.convert_to_list(
                 dict(
-                    profile_id=profile.id,
+                    profile_id=get_entity_id(profile),
                     source_id=source.id,
-                    session_id=session.id,
+                    session_id=get_entity_id(session),
                     request_id=get_context().id
                 )
             )
