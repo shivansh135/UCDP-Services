@@ -112,6 +112,7 @@ class SystemInstallationStatus(BaseModel):
     admin_ok: Optional[bool] = None
     form_ok: Optional[bool] = None
     warning: Optional[List[str]] = None
+    config: Optional[dict] = {}
 
     @staticmethod
     async def check() -> 'SystemInstallationStatus':

@@ -311,7 +311,15 @@ class TracardiConfig(metaclass=Singleton):
     def _unset_secrets(self):
         self.env['INSTALLATION_TOKEN'] = ""
 
+class ServerConfig:
+    def __init__(self, env):
+        self.page_size = int(env['AUTOLOAD_PAGE_SIZE']) if 'AUTOLOAD_PAGE_SIZE' in env else 25
+        self.x_forwarded_ip_header = env.get('USE_X_FORWARDED_IP', None)
+        self.api_docs = (env['API_DOCS'].lower() == "yes") if 'API_DOCS' in env else True
+        self.performance_tracking = env.get('PERFORMANCE_TRACKING', None)
 
+
+server = ServerConfig(os.environ)
 tracardi = TracardiConfig(os.environ)
 mysql = MysqlConfig(os.environ)
 starrocks = StarRocksConfig(os.environ)

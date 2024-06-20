@@ -1,4 +1,4 @@
-from typing import Any
+from typing import Any, Optional
 
 from pydantic import BaseModel
 from tracardi.domain.enum.yes_no import YesNo
@@ -17,3 +17,4 @@ class SystemSettings(BaseModel):
     label: str
     value: Any = None
     desc: str
+    expose: Optional[bool] = False
