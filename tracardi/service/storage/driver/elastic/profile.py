@@ -11,18 +11,18 @@ from tracardi.service.storage.factory import storage_manager
 logger = get_logger(__name__)
 
 
-async def get_duplicated_emails():
+async def get_duplicated_profiles_by_field(field):
     query = {
         "size": 0,
         "query": {
             "exists": {
-                "field": "data.contact.email.main"
+                "field": field
             }
         },
         "aggs": {
             "duplicate_emails": {
                 "terms": {
-                    "field": "data.contact.email.main",
+                    "field": field,
                     "min_doc_count": 2,
                     "size": 1000
                 }
@@ -34,11 +34,11 @@ async def get_duplicated_emails():
         yield bucket['key'], bucket['doc_count']
 
 
-def get_profiles_by_email(email: str):
+def get_profiles_by_field_and_value(field:str, email: str):
     query = {
         "query": {
             "term": {
-                "data.contact.email.main": email
+                field: email
             }
         }
     }
