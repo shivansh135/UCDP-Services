@@ -131,30 +131,31 @@ async def _exec_workflow(profile_id: Optional[str], session: Session, events: Li
     return profile, session, events, ux, response, changed_fields, is_wf_triggered
 
 
-async def exec_workflow(profile_id: Optional[str], session: Session, events: List[Event], tracker_payload: TrackerPayload) -> Tuple[
-    Profile, Session, List[Event], Optional[list], Optional[dict], FieldChangeLogger, bool]:
+async def exec_workflow(profile_id: Optional[str], session: Session, events: List[Event], tracker_payload: TrackerPayload) -> Optional[Tuple[
+    Profile, Session, List[Event], Optional[list], Optional[dict], FieldChangeLogger, bool]]:
 
-    if tracardi.enable_workflow:
+    if not tracardi.enable_workflow:
+        return None
 
-        if profile_id is None:
-            # Profile less execution
-            return await _exec_workflow(
-                profile_id, session, events, tracker_payload
-            )
+    if profile_id is None:
+        # Profile less execution
+        return await _exec_workflow(
+            profile_id, session, events, tracker_payload
+        )
 
-        profile_key = Lock.get_key(Collection.lock_tracker, "profile", profile_id)
-        profile_lock = Lock(_redis, profile_key, default_lock_ttl=5)
+    profile_key = Lock.get_key(Collection.lock_tracker, "profile", profile_id)
+    profile_lock = Lock(_redis, profile_key, default_lock_ttl=5)
 
-        async with async_mutex(profile_lock, name='workflow-worker'):
-            profile, session, events, ux, response, workflow_field_timestamp_log, is_wf_triggered = await _exec_workflow(
-                profile_id, session, events, tracker_payload
-            )
+    async with async_mutex(profile_lock, name='workflow-worker'):
+        profile, session, events, ux, response, workflow_field_timestamp_log, is_wf_triggered = await _exec_workflow(
+            profile_id, session, events, tracker_payload
+        )
 
-        # logger.info(f"Output profile {profile.traits}")
-        # logger.info(f"Output session {session}")
-        # logger.info(f"Output events {events}")
-        # logger.info(f"Output ux {ux}")
-        # logger.info(f"Output response {response}")
-        # print(workflow_field_timestamp_log.get_log())
+    # logger.info(f"Output profile {profile.traits}")
+    # logger.info(f"Output session {session}")
+    # logger.info(f"Output events {events}")
+    # logger.info(f"Output ux {ux}")
+    # logger.info(f"Output response {response}")
+    # print(workflow_field_timestamp_log.get_log())
 
-        return profile, session, events, ux, response, workflow_field_timestamp_log, is_wf_triggered
+    return profile, session, events, ux, response, workflow_field_timestamp_log, is_wf_triggered

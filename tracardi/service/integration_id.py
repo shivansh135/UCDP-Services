@@ -29,7 +29,7 @@ async def save_integration_id(profile_id, system_name, remote_id, data: Optional
         ),
         id=f"{system_name}:{profile_id}",
         type=system_name,
-        profile=PrimaryEntity(id=profile_id),
+        profile=Entity(id=profile_id),
         properties=data,
         traits={
             "id": remote_id

@@ -7,8 +7,8 @@ from elasticsearch.exceptions import NotFoundError
 from ssl import create_default_context
 from tracardi.config import ElasticConfig, elastic
 from tracardi import config
+from tracardi.domain import ExtraInfo
 from tracardi.domain.value_object.bulk_insert_result import BulkInsertResult
-from tracardi.exceptions.exception_service import get_traceback
 from tracardi.exceptions.log_handler import get_logger
 
 _singleton = None
@@ -120,7 +120,8 @@ class ElasticClient:
                     ids=record_ids
                 )
             except Exception as e:
-                logger.error(f"Bulk delete error: {str(e)}")
+                logger.error(f"Bulk delete error: {str(e)}",
+                             extra=ExtraInfo.build("storage", object=self, error_number="S0002"))
                 await asyncio.sleep(2)
 
             repeats -= 1
@@ -163,7 +164,10 @@ class ElasticClient:
                 )
             except Exception as e:
                 last_exception = e
-                logger.error(f"Bulk insert error: {str(e)}")
+                logger.error(
+                    f"Bulk insert error: {str(e)}",
+                    extra=ExtraInfo.build("storage", object=self, error_number="S0001")
+                )
                 await asyncio.sleep(1)
 
             repeats -= 1

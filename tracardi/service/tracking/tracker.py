@@ -117,34 +117,41 @@ async def os_tracker(
 
             # MUTEX: Session and profile are saved if workflow triggered
             # DESTINATION: Destination will be triggered if profile changes.
-            profile, session, events, ux, response, wf_changed_fields, is_wf_triggered = await exec_workflow(
+
+            ux = None
+            response = None
+            workflow_result = await exec_workflow(
                 get_entity_id(profile),
                 session,
                 events,
                 tracker_payload)
 
-            if is_wf_triggered and not wf_changed_fields.empty():
+            if workflow_result is not None:  # Workflow feature enabled
 
-                _changed_fields = wf_changed_fields.convert_to_list({
-                    "profile_id": profile.id,
-                    "session_id": session.id,
-                    "request_id": get_context().id
-                })
+                profile, session, events, ux, response, wf_changed_fields, is_wf_triggered = workflow_result
 
-                # Save changes to field log
-                if tracardi.enable_field_update_log:
-                    # Save to history if needed (DISABLE to REDO)
-                    # await profile_change_log_worker(_changed_fields)
-                    pass
+                if is_wf_triggered and not wf_changed_fields.empty():
 
-                # Dispatch profile changed outbound traffic if profile changed in workflow
-                # Send it SYNCHRONOUSLY
+                    _changed_fields = wf_changed_fields.convert_to_list({
+                        "profile_id": profile.id,
+                        "session_id": session.id,
+                        "request_id": get_context().id
+                    })
 
-                await sync_profile_destination(
-                    profile,
-                    session,
-                    changed_fields=_changed_fields
-                )
+                    # Save changes to field log
+                    if tracardi.enable_field_update_log:
+                        # Save to history if needed (DISABLE to REDO)
+                        # await profile_change_log_worker(_changed_fields)
+                        pass
+
+                    # Dispatch profile changed outbound traffic if profile changed in workflow
+                    # Send it SYNCHRONOUSLY
+
+                    await sync_profile_destination(
+                        profile,
+                        session,
+                        changed_fields=_changed_fields
+                    )
 
             return {
                 "task": tracker_payload.get_id(),
@@ -161,10 +168,8 @@ async def os_tracker(
                 "warnings": []
             }
         finally:
-            # print(0, profile.has_not_saved_changes(), profile.need_auto_merging())
+            # TODO this is probably not needed
             if profile and profile.metadata.system.has_merging_data():
                 pass
-            #     print(1, profile.ids)
-            #     print(2, profile.get_auto_merge_ids())
     finally:
         logger.debug(f"Process time {time.time() - tracking_start}")

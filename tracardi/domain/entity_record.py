@@ -17,7 +17,7 @@ class EntityRecordMetadata(BaseModel):
 
 
 class EntityRecord(Entity):
-    profile: Union[PrimaryEntity, NullablePrimaryEntity]
+    profile: Union[Entity, NullableEntity]
     metadata: Optional[EntityRecordMetadata] = EntityRecordMetadata()
     type: str
     properties: Optional[dict] = {}
