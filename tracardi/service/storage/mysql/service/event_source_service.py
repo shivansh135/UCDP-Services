@@ -44,7 +44,7 @@ class EventSourceService(TableService):
 
     async def load_active_by_bridge_id(self, bridge_id: str) -> SelectResult:
         # It is PRODUCTION CONTEXT-LESS
-        return await self._select_query(
+        return await self._select_in_deployment_mode(
             EventSourceTable,
             where=where_tenant_and_mode_context(
                 EventSourceTable,
