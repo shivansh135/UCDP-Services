@@ -35,21 +35,20 @@ class ConfigurableBridge(NamedEntity):
 
             # Check if in custom event to profile mapping for current event type, there is a mapping for merging keys
 
-            custom_event_to_profile_mapping:List[EventToProfile] = await load_event_to_profile(event_type_id=event_type)
+            custom_event_to_profile_mappings:List[EventToProfile] = await load_event_to_profile(event_type_id=event_type)
 
-            for item in custom_event_to_profile_mapping:
-                custom_mapping_schema = item.to_entity(EventToProfile)
-                for source, destination, _ in custom_mapping_schema.items():
-                    if source in flat_properties:
-                        _merge_id = flat_properties[source]
-                        _prefix = FLAT_PROFILE_FIELD_MAPPING[destination]
+            for custom_mapping_schema in custom_event_to_profile_mappings:
+                for event_to_profile_mapping in custom_mapping_schema.event_to_profile:
+                    if event_to_profile_mapping.event.value in flat_properties and event_to_profile_mapping.profile.value in FLAT_PROFILE_FIELD_MAPPING:
+                        _merge_id = flat_properties[event_to_profile_mapping.event.value]
+                        _prefix = FLAT_PROFILE_FIELD_MAPPING[event_to_profile_mapping.profile.value]
                         profile_id = hash_id(_merge_id, _prefix)
                         return profile_id
 
             # Check if in default event to profile mapping for current event type, there is a mapping for merging keys
             default_event_to_mapping_schema = get_default_mappings_for(event_type, 'copy')
-            if default_event_to_mapping_schema is not None:
 
+            if default_event_to_mapping_schema is not None:
                 for destination, source in default_event_to_mapping_schema.items():  # type: str, str
                     if destination in FLAT_PROFILE_FIELD_MAPPING and source in flat_properties:
                         _merge_id = flat_properties[source]
