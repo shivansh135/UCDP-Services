@@ -4,7 +4,7 @@ Contributions are always welcome!!! Before that, please take a moment to review 
 
 - When contributing to this repository, please first discuss the change you wish to make via issue, email, slack, or any other method with the owners of this repository before making a change. 
 - Don't forget to get yourself assigned before starting to work to avoid any clashes and confusion.
-- Please read how to set up a development [environment for API](http://docs.tracardi.com/development/python_env/) or [GUI](http://docs.tracardi.com/development/react_env/)
+- Please read how to set up a development [environment for API](http://manual.tracardi.com/development/env/api_source.md) or [GUI](http://manual.tracardi.com/development/env/gui_source.md)
 
 
 ## Pull Request Process

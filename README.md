@@ -6,7 +6,7 @@
 
   <p align="center">
    <br/>
-    <a href="https://docs.tracardi.com" rel="dofollow"><strong>Explore Tracardi Documentation</strong></a> ·
+    <a href="https://manual.tracardi.com" rel="dofollow"><strong>Explore Tracardi Documentation</strong></a> ·
     <a href="https://opencollective.com/tracardi-cdp">⭐️ Support the project</a> ·
     <a href="https://join.slack.com/t/tracardi/shared_invite/zt-1bpf35skl-8Fr5FX5a6cji7tX18JNNDA">👨‍💻 Join the community</a> ·
     <a href="https://youtube.com/@tracardi">:tv: Watch tutorials on YOUTUBE</a>
@@ -89,7 +89,7 @@ docker-compose up
 
 ## 👇 Alternate Methods of Installation
 
-There are alternate methods of installation available as well. These are described in detail in our [documentation](http://docs.tracardi.com/installation/). 
+There are alternate methods of installation available as well. These are described in detail in our [documentation](http://manual.tracardi.com/installation/).
 
 ## 👇 Need help ?
 
@@ -114,7 +114,7 @@ There are alternate methods of installation available as well. These are describ
 
 ## 👇 Documentation
 
-* System documentation is available at: [http://docs.tracardi.com](http://docs.tracardi.com).
+* System documentation is available at: [http://manual.tracardi.com](http://manual.tracardi.com).
 * Api documentation is always available after installation at http://127.0.0.1:8686/docs.
 * Tracardi also has a built-in documentation into the system.
 
@@ -124,10 +124,9 @@ Have you found a bug :bug: ? Or maybe you have a nice feature :sparkles: to cont
 [CONTRIBUTING guide](https://github.com/Tracardi/tracardi/blob/master/CONTRIBUTING.md) will help you get your
 development environment ready in minutes.
 
-All contributors willing to start coding TRACARDI plugins are urged to read the follwing beginners' tutorial:
+All contributors willing to start coding TRACARDI plugins are urged to read the following beginners' tutorial:
 
-* [How to code simple plugin in Tracardi](http://docs.tracardi.com/plugins/tutorial/part1/)
-* [Configuring the plugin in Tracardi](http://docs.tracardi.com/plugins/tutorial/part2/)
+* [How to code simple plugin in Tracardi](http://manual.tracardi.com/tutorial/plugin/)
 
 ## 👇 Support us
 
