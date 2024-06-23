@@ -126,7 +126,7 @@ development environment ready in minutes.
 
 All contributors willing to start coding TRACARDI plugins are urged to read the following beginners' tutorial:
 
-* [How to code simple plugin in Tracardi](http://manual.tracardi.com/tutorial/plugin/)
+* [How to code simple plugin in Tracardi](http://manual.tracardi.com/development/tutorial/plugin/)
 
 ## 👇 Support us
 
