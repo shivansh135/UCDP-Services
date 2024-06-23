@@ -1,6 +1,7 @@
 from typing import Optional
 
 from tracardi.domain.bridges.configurable_bridges import WebHookBridge, RestApiBridge, ConfigurableBridge
+from tracardi.exceptions.exception import BlockedException
 from tracardi.service.cache.event_source import load_event_source
 from tracardi.service.change_monitoring.field_change_logger import FieldChangeLogger
 from tracardi.service.license import License
@@ -109,7 +110,7 @@ class Tracker:
     async def track_event(self, tracker_payload: TrackerPayload, tracking_start: float):
 
         if tracardi.disallow_bot_traffic and tracker_payload.is_bot():
-            raise PermissionError(f"Traffic from bot is not allowed.")
+            raise BlockedException(f"Traffic from bot is not allowed.")
 
             # Trim ids - spaces are frequent issues
 

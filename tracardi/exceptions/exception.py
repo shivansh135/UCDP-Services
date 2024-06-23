@@ -35,6 +35,9 @@ class UnauthorizedException(TracardiException):
     pass
 
 
+class BlockedException(TracardiException):
+    pass
+
 class WorkflowException(Exception):
     pass
 
