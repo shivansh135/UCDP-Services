@@ -246,6 +246,7 @@ class TracardiConfig(metaclass=Singleton):
         self.multi_tenant_manager_api_key = env.get('MULTI_TENANT_MANAGER_API_KEY', None)
         self.expose_gui_api = get_env_as_bool('EXPOSE_GUI_API', 'yes')
         self.version: Version = Version(version=VERSION, name=TENANT_NAME, production=_production)
+        self.image_tag = env.get('IMAGE_TAG', 'n/a')
         self.installation_token = env.get('INSTALLATION_TOKEN', 'tracardi')
         random_hash = md5(f"akkdskjd-askmdj-jdff-3039djn-{self.version.db_version}".encode()).hexdigest()
         self.internal_source = f"@internal-{random_hash[:20]}"
