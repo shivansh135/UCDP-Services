@@ -87,9 +87,9 @@ docker-compose up
 
 * Visit the url `http://127.0.0.1:8787` and complete the installation in Tracardi GUI. 
 
-## 👇 Alternate Methods of Installation
+## 👇 Other Methods of Installation
 
-There are alternate methods of installation available as well. These are described in detail in our [documentation](http://manual.tracardi.com/installation/).
+There are other methods of installation available as well. These are described in detail in our [documentation](http://manual.tracardi.com/installation/).
 
 ## 👇 Need help ?
 
