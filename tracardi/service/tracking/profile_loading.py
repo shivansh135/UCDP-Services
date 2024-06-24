@@ -83,10 +83,10 @@ async def load_profile_and_session(
     # Check if necessary hashed ID are present and add missing
     if profile is not None:
 
-        changed_ids = profile.create_auto_merge_hashed_ids()
-        if changed_ids:
+        changed_fields = profile.create_auto_merge_hashed_ids()
+        if changed_fields:
             profile.mark_for_update()
-            profile.metadata.system.set_auto_merge_fields(changed_ids)
+            profile.metadata.system.set_auto_merge_fields(changed_fields)
 
         # Add Ids from payload
         if isinstance(tracker_payload.profile, PrimaryEntity) and tracker_payload.profile.ids:
@@ -98,5 +98,6 @@ async def load_profile_and_session(
                 # Something was added
                 profile.ids = list(payload_ids)
                 profile.mark_for_update()
+                # TODO This may need to add changed fields and mark for merge but we do not know fields as ids are just numbers.
 
     return profile, session

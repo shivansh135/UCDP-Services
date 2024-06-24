@@ -214,9 +214,9 @@ class Profile(PrimaryEntity):
         self.metadata.time.update = now_in_utc()
         self.data.compute_anonymous_field()
         self.set_updated_in_workflow()
-        changed_ids = self.create_auto_merge_hashed_ids()
-        if changed_ids:
-            self.metadata.system.set_auto_merge_fields(changed_ids)
+        changed_fields = self.create_auto_merge_hashed_ids()
+        if changed_fields:
+            self.metadata.system.set_auto_merge_fields(changed_fields)
 
     def is_merged(self, profile_id) -> bool:
         return profile_id != self.id and profile_id in self.ids
