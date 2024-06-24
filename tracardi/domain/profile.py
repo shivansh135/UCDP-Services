@@ -230,6 +230,7 @@ class Profile(PrimaryEntity):
         self.metadata.time.update = now_in_utc()
         self.data.compute_anonymous_field()
         self.set_updated_in_workflow()
+        self.create_auto_merge_hashed_ids()
 
     def get_next_metric_computation_date(self) -> Optional[datetime]:
 
