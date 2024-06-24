@@ -51,8 +51,9 @@ class EventSource(NamedEntityInContext):
         try:
 
             domain: Optional[str] = self.config.get('restriction', "")
+            domain = domain.strip()
 
-            if not domain.strip():
+            if not domain:
                 return None
 
             url = urlparse(domain)
@@ -67,8 +68,9 @@ class EventSource(NamedEntityInContext):
     def get_restriction_type(self) -> Optional[str]:
         try:
             restrict_to: Optional[str] = self.config.get('restrict_to', "")
+            restrict_to = restrict_to.strip()
 
-            if not restrict_to.strip():
+            if not restrict_to:
                 return None
 
             if restrict_to.lower() == "none":

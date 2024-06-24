@@ -136,7 +136,10 @@ class TrackerPayload(BaseModel):
             origin: str = self.request['headers'].get('origin', "")
             referer: str = self.request['headers'].get('referer', "")
 
-            if not origin.strip() and not referer.strip():
+            origin = origin.strip()
+            referer = referer.strip()
+
+            if not origin and not referer:
                 return None
 
             available_sources = [item for item in [origin, referer] if item]
