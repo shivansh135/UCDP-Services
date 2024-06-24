@@ -94,35 +94,55 @@ class Profile(PrimaryEntity):
                 return True
         return False
 
-    def create_auto_merge_hashed_ids(self):
-        ids_len = len(self.ids)
+    def create_auto_merge_hashed_ids(self) -> Optional[set]:
+
         if tracardi.is_apm_on():
 
+            new_ids = set()
+            update_fields = set()
+
             if self.data.identifier.pk and not self.has_hashed_pk():
-                self.ids.append(hash_id(self.data.identifier.pk, PREFIX_IDENTIFIER_PK))
+                new_ids.add(hash_id(self.data.identifier.pk, PREFIX_IDENTIFIER_PK))
+                update_fields.add('data.identifier.pk')
 
             if self.data.identifier.id and not self.has_hashed_id():
-                self.ids.append(hash_id(self.data.identifier.id, PREFIX_IDENTIFIER_ID))
+                new_ids.add(hash_id(self.data.identifier.id, PREFIX_IDENTIFIER_ID))
+                update_fields.add('data.identifier.id')
 
             if self.data.contact.email.has_business() and not self.has_hashed_email_id(PREFIX_EMAIL_BUSINESS):
-                self.ids.append(hash_id(self.data.contact.email.business, PREFIX_EMAIL_BUSINESS))
+                new_ids.add(hash_id(self.data.contact.email.business, PREFIX_EMAIL_BUSINESS))
+                update_fields.add('data.contact.email.business')
+
             if self.data.contact.email.has_main() and not self.has_hashed_email_id(PREFIX_EMAIL_MAIN):
-                self.ids.append(hash_id(self.data.contact.email.main, PREFIX_EMAIL_MAIN))
+                new_ids.add(hash_id(self.data.contact.email.main, PREFIX_EMAIL_MAIN))
+                update_fields.add('data.contact.email.main')
+
             if self.data.contact.email.has_private() and not self.has_hashed_email_id(PREFIX_EMAIL_PRIVATE):
-                self.ids.append(hash_id(self.data.contact.email.private, PREFIX_EMAIL_PRIVATE))
+                new_ids.add(hash_id(self.data.contact.email.private, PREFIX_EMAIL_PRIVATE))
+                update_fields.add('data.contact.email.private')
 
             if self.data.contact.phone.has_business() and not self.has_hashed_phone_id(PREFIX_PHONE_BUSINESS):
-                self.ids.append(hash_id(self.data.contact.phone.business, PREFIX_PHONE_BUSINESS))
+                new_ids.add(hash_id(self.data.contact.phone.business, PREFIX_PHONE_BUSINESS))
+                update_fields.add('data.contact.phone.business')
+
             if self.data.contact.phone.has_main() and not self.has_hashed_phone_id(PREFIX_PHONE_MAIN):
-                self.ids.append(hash_id(self.data.contact.phone.main, PREFIX_PHONE_MAIN))
+                new_ids.add(hash_id(self.data.contact.phone.main, PREFIX_PHONE_MAIN))
+                update_fields.add('data.contact.phone.main')
+
             if self.data.contact.phone.has_mobile() and not self.has_hashed_phone_id(PREFIX_PHONE_MOBILE):
-                self.ids.append(hash_id(self.data.contact.phone.mobile, PREFIX_PHONE_MOBILE))
+                new_ids.add(hash_id(self.data.contact.phone.mobile, PREFIX_PHONE_MOBILE))
+                update_fields.add('data.contact.phone.mobile')
+
             if self.data.contact.phone.has_whatsapp() and not self.has_hashed_phone_id(PREFIX_PHONE_WHATSUP):
-                self.ids.append(hash_id(self.data.contact.phone.whatsapp, PREFIX_PHONE_WHATSUP))
+                new_ids.add(hash_id(self.data.contact.phone.whatsapp, PREFIX_PHONE_WHATSUP))
+                update_fields.add('data.contact.phone.whatsapp')
 
             # Update if new data
-            if len(self.ids) > ids_len:
-                self.mark_for_update()
+            if new_ids:
+                self.ids = list(set(self.ids) | new_ids)
+                return update_fields
+
+        return None
 
     def add_auto_merge_hashed_id(self, flat_field) -> Optional[str]:
         field_closure = FIELD_TO_PROPERTY_MAPPING.get(flat_field, None)
@@ -194,7 +214,9 @@ class Profile(PrimaryEntity):
         self.metadata.time.update = now_in_utc()
         self.data.compute_anonymous_field()
         self.set_updated_in_workflow()
-        self.create_auto_merge_hashed_ids()
+        changed_ids = self.create_auto_merge_hashed_ids()
+        if changed_ids:
+            self.metadata.system.set_auto_merge_fields(changed_ids)
 
     def is_merged(self, profile_id) -> bool:
         return profile_id != self.id and profile_id in self.ids
