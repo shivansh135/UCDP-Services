@@ -3,7 +3,6 @@ import os
 from tracardi.domain.bridge import Bridge
 from tracardi.service.plugin.domain.register import Form, FormGroup, FormField, FormComponent
 
-
 _local_dir = os.path.dirname(__file__)
 
 open_rest_source_bridge = Bridge(
@@ -12,7 +11,9 @@ open_rest_source_bridge = Bridge(
     name="REST API Bridge",
     description="API /track collector",
     config={
-        "static_profile_id": False
+        "static_profile_id": False,
+        "restrict_to": "none",
+        "restriction": ""
     },
     form=Form(groups=[
         FormGroup(
@@ -26,6 +27,30 @@ open_rest_source_bridge = Bridge(
                                 "please note that using this feature can pose a security risk. It's important to read "
                                 "Tracardi documentation carefully before using it.",
                     component=FormComponent(type="bool", props={"label": "Allow static, remotely defined profile ID"})
+                ),
+                FormField(
+                    id="restrict_to",
+                    name="Restrict to",
+                    description="Select if you would like to restrict event source to certain domain or IP.",
+                    component=FormComponent(
+                        type="select",
+                        props={
+                            "label": "Restriction type",
+                            "items": {
+                                "none": "None",
+                                "domain": "Domain",
+                                "ip":"IP Address"}
+                        })
+                ),
+                FormField(
+                    id="restriction",
+                    name="Domain or IP Address",
+                    description="Type domain or IP if the restriction type was selected.",
+                    component=FormComponent(
+                        type="text",
+                        props={
+                            "label": "Domain or IP Address"
+                        })
                 )
             ])
     ])
@@ -90,7 +115,7 @@ open_webhook_source_bridge = Bridge(
             ])
     ])
 )
-with open(os.path.join(_local_dir, "manual/redirect_manual.md"), "r", encoding="utf-8") as fh:
+with open(os.path.join(_local_dir, "bridges/manual/redirect_manual.md"), "r", encoding="utf-8") as fh:
     manual = fh.read()
 
 redirect_bridge = Bridge(
