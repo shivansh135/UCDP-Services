@@ -1,3 +1,5 @@
+from urllib.parse import urlparse, ParseResult
+
 from user_agents.parsers import UserAgent
 
 from tracardi.service.utils.date import now_in_utc
@@ -127,6 +129,28 @@ class TrackerPayload(BaseModel):
         if _user_agent:
             return _user_agent.is_bot
         return False
+
+    def get_origin_or_referer(self) -> Optional[ParseResult]:
+        try:
+
+            origin: str = self.request['headers'].get('origin', "")
+            referer: str = self.request['headers'].get('referer', "")
+
+            if not origin.strip() and not referer.strip():
+                return None
+
+            available_sources = [item for item in [origin, referer] if item]
+
+            if not available_sources:
+                return None
+
+            url = urlparse(available_sources[0])
+            if not url.scheme or not url.netloc:
+                return None
+            return url
+
+        except KeyError:
+            return None
 
     def replace_profile(self, profile_id):
         if profile_id:

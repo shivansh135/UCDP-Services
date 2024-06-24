@@ -4,6 +4,7 @@ from tracardi.config import tracardi
 from tracardi.domain.event_source import EventSource
 from tracardi.domain.named_entity import NamedEntity
 from tracardi.domain.payload.tracker_payload import TrackerPayload
+from tracardi.exceptions.exception import BlockedException
 from tracardi.exceptions.log_handler import get_logger
 from tracardi.service.cache.event_source import load_event_source
 from tracardi.service.setup.setup_bridges import open_rest_source_bridge
@@ -30,14 +31,14 @@ async def _check_source_id(allowed_bridges, source_id) -> Optional[EventSource]:
     if source is not None:
 
         if not source.enabled:
-            raise PermissionError("Event source disabled.")
+            raise BlockedException("Event source disabled.")
 
         if not source.is_allowed(allowed_bridges):
-            raise PermissionError(f"This endpoint allows only bridges of "
-                                        f"types {allowed_bridges}, but the even source "
-                                        f"`{source.name}`.`{source_id}` has types `{source.type}`. "
-                                        f"Change bridge type in event source `{source.name}` to one that has endpoint type "
-                                        f"{allowed_bridges} or call any `{source.type}` endpoint.")
+            raise BlockedException(f"This endpoint allows only bridges of "
+                                   f"types {allowed_bridges}, but the even source "
+                                   f"`{source.name}`.`{source_id}` has types `{source.type}`. "
+                                   f"Change bridge type in event source `{source.name}` to one that has endpoint type "
+                                   f"{allowed_bridges} or call any `{source.type}` endpoint.")
 
     return source
 
@@ -62,11 +63,17 @@ async def _validate_source(tracker_payload: TrackerPayload, allowed_bridges) -> 
     source = await _check_source_id(allowed_bridges, source_id)
 
     if source is None:
-        raise PermissionError(f"Invalid event source `{source_id}`. Request came from IP: `{ip}` "
-                         f"width payload: {tracker_payload}")
+        raise BlockedException(f"Invalid event source `{source_id}`. Request came from IP: `{ip}` "
+                               f"width payload: {tracker_payload}")
 
-    print(source.config)
-    print(tracker_payload)
+    if source.has_restricted_domain():
+        origin = tracker_payload.get_origin_or_referer()
+
+        if not origin:
+            raise BlockedException(f"Event source `{source_id}` requires origin header.")
+
+        if not source.is_allowed_domain_origin(origin):
+            raise BlockedException(f"Event source `{source_id}`. Disallows url: {origin.geturl()}")
 
     return source
 
@@ -74,7 +81,7 @@ async def _validate_source(tracker_payload: TrackerPayload, allowed_bridges) -> 
 def _get_internal_source(tracker_config: TrackerConfig, tracker_payload: TrackerPayload):
     if tracker_config.internal_source.id != tracker_payload.source.id:
         msg = f"Invalid event source `{tracker_payload.source.id}`"
-        raise PermissionError(msg)
+        raise BlockedException(msg)
     return tracker_config.internal_source
 
 

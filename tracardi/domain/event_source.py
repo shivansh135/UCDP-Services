@@ -1,3 +1,5 @@
+from urllib.parse import urlparse, ParseResult
+
 from datetime import datetime
 from typing import Optional, Union, List, Any
 
@@ -32,3 +34,56 @@ class EventSource(NamedEntityInContext):
 
     def is_allowed(self, allowed_types) -> bool:
         return bool(set(self.type).intersection(set(allowed_types)))
+
+    def has_restricted_domain(self) -> bool:
+        if 'restrict_to' not in self.config or 'restriction' not in self.config:
+            return False
+
+        domain: Optional[str] = self.get_restricted_domain()
+        restrict_to: Optional[str] = self.get_restriction_type()
+
+        if not domain or not restrict_to:
+            return False
+
+        return True
+
+    def get_restricted_domain(self) -> Optional[ParseResult]:
+        try:
+
+            domain: Optional[str] = self.config.get('restriction', "")
+
+            if not domain.strip():
+                return None
+
+            url = urlparse(domain)
+            if not url.scheme or not url.netloc:
+                # Return original value
+                return urlparse(f"http://{domain}")
+            return url
+
+        except KeyError:
+            return None
+
+    def get_restriction_type(self) -> Optional[str]:
+        try:
+            restrict_to: Optional[str] = self.config.get('restrict_to', "")
+
+            if not restrict_to.strip():
+                return None
+
+            if restrict_to.lower() == "none":
+                return None
+            return restrict_to
+        except KeyError:
+            return None
+
+    def is_allowed_domain_origin(self, origin: ParseResult) -> bool:
+        restrict_to = self.get_restricted_domain()
+        if not restrict_to:
+            return True
+
+        type_of_restriction = self.get_restriction_type()
+        if not type_of_restriction:
+            return True
+
+        return restrict_to.hostname.lower().strip() == origin.hostname.lower().strip()

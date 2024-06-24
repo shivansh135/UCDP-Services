@@ -30,26 +30,26 @@ open_rest_source_bridge = Bridge(
                 ),
                 FormField(
                     id="restrict_to",
-                    name="Restrict to",
-                    description="Select if you would like to restrict event source to certain domain or IP.",
+                    name="Allow collection only from defined domain",
+                    description="Select if you would like to restrict event source to be able to collect data "
+                                "from certain domain or IP.",
                     component=FormComponent(
                         type="select",
                         props={
                             "label": "Restriction type",
                             "items": {
                                 "none": "None",
-                                "domain": "Domain",
-                                "ip":"IP Address"}
+                                "url": "URL Address"}
                         })
                 ),
                 FormField(
                     id="restriction",
-                    name="Domain or IP Address",
-                    description="Type domain or IP if the restriction type was selected.",
+                    name="Restrict to URL Address",
+                    description="Type URL (e.g http://www.example.com) if the restriction type was selected.",
                     component=FormComponent(
                         type="text",
                         props={
-                            "label": "Domain or IP Address"
+                            "label": "URL with Domain or IP Address"
                         })
                 )
             ])
