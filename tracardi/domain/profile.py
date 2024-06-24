@@ -1,11 +1,9 @@
-from zoneinfo import ZoneInfo
-
 import uuid
 from datetime import datetime
 from typing import Optional, List, Dict, Any, Set
 
 from dotty_dict import Dotty
-from pydantic import BaseModel, ValidationError, PrivateAttr
+from pydantic import BaseModel, PrivateAttr
 from dateutil import parser
 
 from .entity import PrimaryEntity
@@ -28,18 +26,6 @@ from ..service.utils.hasher import hash_id, has_hash_id
 
 class ConsentRevoke(BaseModel):
     revoke: Optional[datetime] = None
-
-
-class CustomMetric(BaseModel):
-    next: datetime
-    timestamp: datetime
-    value: Any = None
-
-    def expired(self) -> bool:
-        return now_in_utc() > self.next.replace(tzinfo=ZoneInfo('UTC'))
-
-    def changed(self, value) -> bool:
-        return value != self.value
 
 
 class Profile(PrimaryEntity):
@@ -203,52 +189,12 @@ class Profile(PrimaryEntity):
             "storage": self.get_meta_data().model_dump()
         }
 
-    def has_metric(self, metric_name) -> bool:
-        return metric_name in self.data.metrics.custom
-
-    def need_metric_computation(self, metric_name) -> bool:
-        if not self.has_metric(metric_name):
-            return False
-
-        if 'next' not in self.data.metrics.custom[metric_name]:
-            return True
-
-        if not isinstance(self.data.metrics.custom[metric_name], dict):
-            print(f"ERROR: Metric {metric_name} is not dict.")
-            return False
-
-        try:
-            metric = CustomMetric(**self.data.metrics.custom[metric_name])
-        except ValidationError as e:
-            print(str(e))
-            return False
-
-        return metric.expired()
-
     def mark_for_update(self):
         self.operation.update = True
         self.metadata.time.update = now_in_utc()
         self.data.compute_anonymous_field()
         self.set_updated_in_workflow()
         self.create_auto_merge_hashed_ids()
-
-    def get_next_metric_computation_date(self) -> Optional[datetime]:
-
-        if not self.data.metrics.custom:
-            return None
-
-        all_next_dates = []
-        for _, _metric_data in self.data.metrics.custom.items():
-            if 'next' in _metric_data:
-                _next = _metric_data['next']
-                if isinstance(_next, str):
-                    _next = parser.parse(_next)
-
-                if not isinstance(_next, datetime):
-                    print("err")
-
-                all_next_dates.append(_next)
-        return min(all_next_dates)
 
     def is_merged(self, profile_id) -> bool:
         return profile_id != self.id and profile_id in self.ids
