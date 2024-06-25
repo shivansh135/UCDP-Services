@@ -7,8 +7,8 @@ from uuid import uuid4
 from typing import List, Tuple, Dict, Set, Generator, Optional, Union
 
 from datetime import datetime
-from dotty_dict import Dotty
 
+from tracardi.domain.profile import FlatProfile
 from tracardi.domain.system_entity_property import SystemEntityProperty
 from tracardi.exceptions.log_handler import get_logger
 from tracardi.process_engine.tql.utils.dictonary import flatten
@@ -27,7 +27,7 @@ class ProfileTimestamps(BaseModel):
     field: Dict[str, Optional[Union[datetime, float, str]]]
 
 
-def split_flat_profile_to_data_and_timestamps(profile: Dotty) -> Tuple[Dotty, ProfileTimestamps]:
+def split_flat_profile_to_data_and_timestamps(profile: FlatProfile) -> Tuple[FlatProfile, ProfileTimestamps]:
     return profile.copy(), ProfileTimestamps(
         insert=profile.get('metadata.time.insert', None),
         update=profile.get('metadata.time.update', None),
@@ -47,7 +47,7 @@ def _get_nested(nested_property_settings: List[SystemEntityProperty], field) -> 
 
 
 def get_profile_field_settings(indexed_properties_settings: Dict[str, SystemEntityProperty],
-                               profile: Dotty,
+                               profile: FlatProfile,
                                default_strategies: List[str],
                                path,
                                skip_values
@@ -128,7 +128,7 @@ class ProfileDataSpliter:
 
 class FieldManager:
 
-    def __init__(self, profiles: List[Dotty],
+    def __init__(self, profiles: List[FlatProfile],
                  merged_profile_field_settings: Set[SystemEntityProperty],
                  profile_id_to_timestamps: Dict[str, ProfileTimestamps],
                  default_strategies, path="",skip_fields=None):
@@ -179,8 +179,8 @@ class FieldManager:
         )
 
 
-    def merge(self, path) -> Tuple[Dotty, dict]:
-        merged_profile = Dotty({})
+    def merge(self, path) -> Tuple[FlatProfile, dict]:
+        merged_profile = FlatProfile({})
         changed_fields = {}
 
         profile_metadata = self.get_profiles_metadata()
