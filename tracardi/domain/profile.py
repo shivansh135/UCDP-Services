@@ -426,7 +426,7 @@ class FlatProfile(Dotty):
         return self['operation.new']
 
     def mark_as_merged(self):
-        self['metadata.system.aux'] = {}
+        self['metadata.system.aux.auto_merge'] = []
         self['metadata.aux.merge_time'] = now_in_utc()
 
     def update_changed_fields(self, changed_fields):

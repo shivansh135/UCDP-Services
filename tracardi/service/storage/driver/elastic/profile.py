@@ -104,6 +104,39 @@ async def count_profile_duplicates(profile_ids: List[str]):
     })
 
 
+# async def load_profiles_with_duplicated_ids(log_error=True):
+#     query = {
+#         "size": 0,
+#         "aggs": {
+#             "duplicate_ids": {
+#                 "terms": {
+#                     "field": "ids",
+#                     "min_doc_count": 2,
+#                     "size": 1000
+#                 },
+#                 "aggs": {
+#                     "duplicate_documents": {
+#                         "top_hits": {
+#                             "size": 100,
+#                             "_source": {
+#                                 "includes": ["id"]
+#                             }
+#                         }
+#                     }
+#                 }
+#             }
+#         }
+#     }
+#
+#     records = await storage_manager('profile').query(query, log_error)
+#
+#     for data in records.aggregations("duplicate_ids").buckets():
+#         logger.info(f"Found {data['doc_count']} profiles with the same ID='{data['key']}'")
+#         profile_ids = StorageRecords.build_from_elastic(data['duplicate_documents'])
+#         for profile_id in profile_ids:
+#             yield profile_id['id']
+
+
 async def load_profiles_with_duplicated_ids(log_error=True):
     query = {
         "size": 0,
@@ -113,26 +146,21 @@ async def load_profiles_with_duplicated_ids(log_error=True):
                     "field": "ids",
                     "min_doc_count": 2,
                     "size": 1000
-                },
-                "aggs": {
-                    "duplicate_documents": {
-                        "top_hits": {
-                            "_source": {
-                                "includes": ["id"]
-                            }
-                        }
-                    }
                 }
-            },
-
+            }
         }
     }
 
     records = await storage_manager('profile').query(query, log_error)
+
+    duplicated_ids = set()
     for data in records.aggregations("duplicate_ids").buckets():
-        profile_ids = StorageRecords.build_from_elastic(data['duplicate_documents'])
-        for profile_id in profile_ids:
-            yield profile_id['id']
+        logger.info(f"Found {data['doc_count']} profiles with the same ID='{data['key']}'")
+        duplicated_ids.add(data['key'])
+
+    if duplicated_ids:
+        async for row in load_by_ids(list(duplicated_ids), batch=1000):
+            yield row
 
 
 async def load_by_id(profile_id: str) -> Optional[StorageRecord]:
