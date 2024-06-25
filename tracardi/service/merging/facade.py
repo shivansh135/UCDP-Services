@@ -1,14 +1,13 @@
 from typing import List, Optional
 
-from tracardi.domain.profile import Profile
+from tracardi.domain.profile import Profile, FlatProfile
+from tracardi.service.merging.engine.merger import merge_profiles
 from tracardi.service.profile_merger import ProfileMerger
-from tracardi.domain.storage_record import StorageRecord, RecordMetadata
+from tracardi.domain.storage_record import StorageRecord, RecordMetadata, StorageRecords
+from tracardi.service.storage.driver.elastic.profile import load_duplicated_profiles_for_profile
+from tracardi.service.storage.elastic.interface.merging import move_profile_events_and_sessions
 from tracardi.service.tracking.storage.profile_storage import save_profile
 from tracardi.service.storage.driver.elastic import profile as profile_db
-
-
-async def merge_profiles(profile: Profile, similar_profiles: List[Profile]) -> Optional[Profile]:
-    return await ProfileMerger(profile).compute_one_profile(similar_profiles)
 
 
 async def merge_profile_by_merging_keys(profile: Optional[Profile], merge_by) -> Optional[Profile]:
@@ -55,4 +54,36 @@ async def deduplicate_profile(profile_id: str, profile_ids: List[str] = None) ->
         similar_profiles.append(_profile_record.to_entity(Profile))
 
     # Merged profiles refresh index
-    return await merge_profiles(profile, similar_profiles)
+    return await ProfileMerger(profile).compute_one_profile(similar_profiles)
+
+
+async def merge_profiles_by_id(profile: Profile) -> Optional[Profile]:
+
+    print(profile.id)
+    duplicated_profiles = await load_duplicated_profiles_for_profile(profile)
+    print(len(duplicated_profiles))
+
+    profiles = [FlatProfile(profile_record) for profile_record in duplicated_profiles]
+
+    print(len(profiles))
+    merged, changed_fields = merge_profiles(profiles)
+
+    print(changed_fields)
+
+    merged.update_changed_fields(changed_fields)
+    merged.mark_as_merged()
+
+    profile_ids = merged.get('ids', [])
+
+    print([profile_record['id'] for profile_record in profiles if 'a8a92e68-0c7f-497a-a4bb-5f441925f0f2' in profile_record['ids']])
+
+    print(profile_ids)
+    profile_id = merged.get("id", None)
+    await move_profile_events_and_sessions(duplicate_profile_ids=profile_ids, merged_profile_id=profile_id)
+
+    print(merged['id'])
+    return Profile(**merged)
+
+
+async def compute_one_profile_in_db(profile: Profile) -> Optional[Profile]:
+    pass

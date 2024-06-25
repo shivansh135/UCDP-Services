@@ -1,7 +1,6 @@
 from typing import Union, Tuple
 
 from tracardi.domain.profile import *
-from tracardi.config import elastic
 from tracardi.domain.storage_record import StorageRecord, StorageRecords
 from tracardi.exceptions.log_handler import get_logger
 from tracardi.service.storage.driver.elastic import raw as raw_db
@@ -56,6 +55,7 @@ def load_profiles_for_auto_merge():
 
 async def load_profile_duplicates(profile_ids: List[str]):
     return await storage_manager('profile').query({
+        "size": 10000,
         "query": {
             "bool": {
                 "should": [
@@ -354,3 +354,13 @@ async def aggregate_by_field(bucket, aggr_field: str, query: dict = None, bucket
         _query['query'] = query
 
     return await storage_manager('profile').query(_query)
+
+
+async def load_duplicated_profiles_for_profile(profile: Profile) -> StorageRecords:
+    if isinstance(profile.ids, list):
+        set(profile.ids).add(profile.id)
+        profile_ids = list(profile.ids)
+    else:
+        profile_ids = [profile.id]
+
+    return await load_profile_duplicates(profile_ids)

@@ -1,36 +1,12 @@
-from typing import List
-
 import time
 
 from datetime import datetime
 
 import asyncio
-from dotty_dict import Dotty
-
 from tracardi.domain.profile import ConsentRevoke, Profile, FlatProfile
-from tracardi.service.merging.engine.field_manager import FieldManager, index_fields, ProfileDataSpliter
-from tracardi.service.merging.engine.merging_strategy_types import DEFAULT_STRATEGIES
-from tracardi.service.setup.mappings.objects.profile import default_profile_properties
+from tracardi.service.merging.engine.merger import merge_profiles
 
 
-def merge(profiles: List[FlatProfile]):
-
-    path = ""
-    indexed_profile_field_settings = index_fields(default_profile_properties, path)
-
-    ps = ProfileDataSpliter(profiles, indexed_profile_field_settings, DEFAULT_STRATEGIES, path=path, skip_values=[])
-
-    merged_profile_fields_settings, profile_to_timestamps = ps.split()
-
-    fm = FieldManager(
-        profiles,
-        merged_profile_field_settings=merged_profile_fields_settings,
-        profile_id_to_timestamps=profile_to_timestamps,
-        path=path,
-        default_strategies=DEFAULT_STRATEGIES
-    )
-
-    return fm.merge(path)
 
 async def main():
     profile1 = FlatProfile({
@@ -350,7 +326,7 @@ async def main():
     t = time.time()
     profiles = [profile1, profile2, profile3]
 
-    merged, changed_fields = merge(profiles)
+    merged, changed_fields = merge_profiles(profiles)
     print(merged.to_dict()['consents'])
     p = Profile(**merged)
     print(p.consents)
