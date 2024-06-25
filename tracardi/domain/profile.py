@@ -90,7 +90,7 @@ class Profile(PrimaryEntity):
 
     def has_hashed_pk(self) -> bool:
         for id in self.ids:
-            if id.startswith(PREFIX_IDENTIFIER_ID):
+            if id.startswith(PREFIX_IDENTIFIER_PK):
                 return True
         return False
 

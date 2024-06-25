@@ -18,7 +18,6 @@ async def compute_one_profile_in_db(profile: Profile) -> Tuple[Optional[Profile]
         if len(duplicated_profiles_with_metadata) == 1:
             flat_profile, metadata = duplicated_profiles_with_metadata[0]
             flat_profile.mark_as_merged()
-
             profile = await save_merged_profile(flat_profile, metadata)
 
             return profile, set()
