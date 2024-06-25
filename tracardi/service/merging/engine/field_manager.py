@@ -12,9 +12,9 @@ from tracardi.domain.profile import FlatProfile
 from tracardi.domain.system_entity_property import SystemEntityProperty
 from tracardi.exceptions.log_handler import get_logger
 from tracardi.process_engine.tql.utils.dictonary import flatten
-from tracardi.service.merging.new.field_metadata import FieldMetaData
-from tracardi.service.merging.new.profile_metadata import ProfileMetaData
-from tracardi.service.merging.new.value_timestamp import ValueTimestamp, ProfileValueTimestamp
+from tracardi.service.merging.engine.field_metadata import FieldMetaData
+from tracardi.service.merging.engine.profile_metadata import ProfileMetaData
+from tracardi.service.merging.engine.value_timestamp import ValueTimestamp, ProfileValueTimestamp
 
 logger = get_logger(__name__)
 

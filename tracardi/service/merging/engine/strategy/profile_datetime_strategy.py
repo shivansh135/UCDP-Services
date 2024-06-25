@@ -4,8 +4,8 @@ from datetime import datetime
 from dotty_dict import Dotty
 from typing import Optional, List
 
-from tracardi.service.merging.new.utils.converter import _convert
-from tracardi.service.merging.new.value_timestamp import ValueTimestamp
+from tracardi.service.merging.engine.utils.converter import _convert
+from tracardi.service.merging.engine.value_timestamp import ValueTimestamp
 
 
 def _parse(value):

@@ -2,7 +2,7 @@ from typing import List, Set, Generator, Tuple
 
 from pydantic import BaseModel
 
-from tracardi.service.merging.new.field_metadata import FieldMetaData, MergedValue
+from tracardi.service.merging.engine.field_metadata import FieldMetaData, MergedValue
 
 
 class ProfileMetaData(BaseModel):

@@ -6,17 +6,17 @@ from typing import List, Optional, Dict, Set, Tuple
 from pydantic import BaseModel
 
 from tracardi.domain.system_entity_property import SystemEntityProperty
-from tracardi.service.merging.new.merging_strategy_types import StrategyRecord, DEFAULT_STRATEGIES
-from tracardi.service.merging.new.strategy_mapping import id_to_strategy
-from tracardi.service.merging.new.strategy_protocol import StrategyProtocol
-from tracardi.service.merging.new.value_timestamp import ValueTimestamp, ProfileValueTimestamp
+from tracardi.service.merging.engine.merging_strategy_types import StrategyRecord, DEFAULT_STRATEGIES
+from tracardi.service.merging.engine.strategy_mapping import id_to_strategy
+from tracardi.service.merging.engine.strategy_protocol import StrategyProtocol
+from tracardi.service.merging.engine.value_timestamp import ValueTimestamp, ProfileValueTimestamp
 from tracardi.service.setup.mappings.objects.profile import default_profile_properties
 
 MergedValue = namedtuple('MergedValue', ['value', 'timestamp', 'strategy_id', "changed_fields"])
 TimestampTuple = namedtuple('TimestampTuple', ['id', 'fields', 'insert', 'update'])
 
 def to_profile_timestamps(data: List[ValueTimestamp]):
-    from tracardi.service.merging.new.field_manager import ProfileTimestamps
+    from tracardi.service.merging.engine.field_manager import ProfileTimestamps
     return ProfileTimestamps(
         insert=data[0].profile_insert,
         update=data[0].profile_update,
@@ -25,7 +25,7 @@ def to_profile_timestamps(data: List[ValueTimestamp]):
 
 
 def get_field_settings(profiles: List[Dotty], indexed_custom_profile_field_settings, path) -> Set[SystemEntityProperty]:
-    from tracardi.service.merging.new.field_manager import get_profile_field_settings
+    from tracardi.service.merging.engine.field_manager import get_profile_field_settings
     set_of_field_settings = set()
     for profile in profiles:
         # Get all setting for fields
@@ -56,8 +56,8 @@ class DictStrategy:
 
     def merge(self) -> Tuple[Dotty, dict]:
 
-        from tracardi.service.merging.new.field_manager import ProfileTimestamps
-        from tracardi.service.merging.new.field_manager import FieldManager, index_fields
+        from tracardi.service.merging.engine.field_manager import ProfileTimestamps
+        from tracardi.service.merging.engine.field_manager import FieldManager, index_fields
 
         print('---------', self.field_metadata.field)
 

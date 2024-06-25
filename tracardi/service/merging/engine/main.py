@@ -8,8 +8,8 @@ import asyncio
 from dotty_dict import Dotty
 
 from tracardi.domain.profile import ConsentRevoke, Profile, FlatProfile
-from tracardi.service.merging.new.field_manager import FieldManager, index_fields, ProfileDataSpliter
-from tracardi.service.merging.new.merging_strategy_types import DEFAULT_STRATEGIES
+from tracardi.service.merging.engine.field_manager import FieldManager, index_fields, ProfileDataSpliter
+from tracardi.service.merging.engine.merging_strategy_types import DEFAULT_STRATEGIES
 from tracardi.service.setup.mappings.objects.profile import default_profile_properties
 
 

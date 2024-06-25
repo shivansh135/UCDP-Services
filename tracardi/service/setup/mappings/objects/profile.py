@@ -1,6 +1,6 @@
 from typing import List
 
-from tracardi.service.merging.new.merging_strategy_types import OR, SUM, \
+from tracardi.service.merging.engine.merging_strategy_types import OR, SUM, \
     UNIQUE_CONCAT, AND, FIRST_DATETIME, LAST_DATETIME, LAST_PROFILE_UPDATE_TIME, LAST_PROFILE_INSERT_TIME, \
     FIRST_PROFILE_INSERT_TIME, FIRST_ITEM, LAST_UPDATE
 from tracardi.domain.system_entity_property import SystemEntityProperty

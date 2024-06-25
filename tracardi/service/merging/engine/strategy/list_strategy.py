@@ -3,7 +3,7 @@ from itertools import chain
 
 from typing import Optional, List
 
-from tracardi.service.merging.new.value_timestamp import ValueTimestamp
+from tracardi.service.merging.engine.value_timestamp import ValueTimestamp
 
 
 def convert_list(value) -> Optional[list]:

@@ -4,8 +4,8 @@ from typing import Optional, List
 from dateparser import parse
 from datetime import datetime
 
-from tracardi.service.merging.new.utils.converter import _convert
-from tracardi.service.merging.new.value_timestamp import ValueTimestamp
+from tracardi.service.merging.engine.utils.converter import _convert
+from tracardi.service.merging.engine.value_timestamp import ValueTimestamp
 
 
 def convert_time(value) -> Optional[datetime]:

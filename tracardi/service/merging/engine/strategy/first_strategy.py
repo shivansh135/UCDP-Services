@@ -1,7 +1,7 @@
 from dotty_dict import Dotty
 from typing import List, Optional
 
-from tracardi.service.merging.new.value_timestamp import ValueTimestamp
+from tracardi.service.merging.engine.value_timestamp import ValueTimestamp
 
 
 class FirstStrategy:

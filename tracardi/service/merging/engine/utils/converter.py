@@ -1,7 +1,7 @@
 from typing import Optional
 
 from datetime import datetime
-from tracardi.service.merging.new.value_timestamp import ValueTimestamp
+from tracardi.service.merging.engine.value_timestamp import ValueTimestamp
 
 
 def _convert(field_ref: ValueTimestamp) -> Optional[ValueTimestamp]:

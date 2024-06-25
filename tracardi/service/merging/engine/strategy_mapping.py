@@ -1,16 +1,16 @@
-from tracardi.service.merging.new.merging_strategy_types import LAST_UPDATE, FIRST_UPDATE, MIN, MAX, StrategyRecord, \
+from tracardi.service.merging.engine.merging_strategy_types import LAST_UPDATE, FIRST_UPDATE, MIN, MAX, StrategyRecord, \
     SUM, AVG, LAST_DATETIME, FIRST_DATETIME, ALWAYS_TRUE, ALWAYS_FALSE, AND, OR, CONCAT, UNIQUE_CONCAT, \
     FIRST_PROFILE_INSERT_TIME, LAST_PROFILE_UPDATE_TIME, LAST_PROFILE_INSERT_TIME, FIRST_ITEM
-from tracardi.service.merging.new.strategy.bool_strategy import OrStrategy, AndStrategy, AlwaysFalseStrategy, \
+from tracardi.service.merging.engine.strategy.bool_strategy import OrStrategy, AndStrategy, AlwaysFalseStrategy, \
     AlwaysTrueStrategy
-from tracardi.service.merging.new.strategy.datetime_strategy import MinDateTimeStrategy, MaxDateTimeStrategy
-from tracardi.service.merging.new.strategy.first_strategy import FirstStrategy
-from tracardi.service.merging.new.strategy.list_strategy import ConCatDistinctStrategy, ConCatStrategy
-from tracardi.service.merging.new.strategy.profile_datetime_strategy import LastProfileInsertTimeStrategy, \
+from tracardi.service.merging.engine.strategy.datetime_strategy import MinDateTimeStrategy, MaxDateTimeStrategy
+from tracardi.service.merging.engine.strategy.first_strategy import FirstStrategy
+from tracardi.service.merging.engine.strategy.list_strategy import ConCatDistinctStrategy, ConCatStrategy
+from tracardi.service.merging.engine.strategy.profile_datetime_strategy import LastProfileInsertTimeStrategy, \
     LastProfileUpdateTimeStrategy, FirstProfileInsertTimeStrategy
-from tracardi.service.merging.new.strategy.value_strategy import AvgValueStrategy, SumValueStrategy, MaxValueStrategy, \
+from tracardi.service.merging.engine.strategy.value_strategy import AvgValueStrategy, SumValueStrategy, MaxValueStrategy, \
     MinValueStrategy
-from tracardi.service.merging.new.strategy.value_update_strategy import LastUpdateStrategy, FirstUpdateStrategy
+from tracardi.service.merging.engine.strategy.value_update_strategy import LastUpdateStrategy, FirstUpdateStrategy
 
 id_to_strategy = {
 
