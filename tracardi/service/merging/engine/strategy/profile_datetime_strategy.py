@@ -13,6 +13,7 @@ def _parse(value):
         return value
     return parse(value)
 
+
 class LastProfileInsertTimeStrategy:
 
     def __init__(self, profile: Dotty, field_metadata):
@@ -41,6 +42,7 @@ class LastProfileInsertTimeStrategy:
 
         # Return the first tuple in the sorted list
         return _convert(sorted_data)
+
 
 class FirstProfileInsertTimeStrategy:
 

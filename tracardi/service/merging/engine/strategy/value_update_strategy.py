@@ -20,14 +20,21 @@ class ValueUpdateStrategy:
                 return False
         return True
 
+
 class LastUpdateStrategy(ValueUpdateStrategy):
 
     def merge(self) -> Optional[ValueTimestamp]:
         # Filter out tuples with None as the second element and convert
         filtered_data = [ValueTimestamp(
             value=value_meta.value,
-            timestamp=value_meta.timestamp.timestamp() if isinstance(value_meta.timestamp, datetime) else value_meta.timestamp)
-            for value_meta in self.field_metadata.values if value_meta.timestamp is not None and not value_meta.is_empty_value()]
+            timestamp=value_meta.timestamp.timestamp() if isinstance(value_meta.timestamp,
+                                                                     datetime) else value_meta.timestamp)
+            for value_meta in self.field_metadata.values if
+            value_meta.timestamp is not None and not value_meta.is_empty_value()]
+
+        if not filtered_data:
+            # If all values are empty return None Value
+            return ValueTimestamp(value=None)
 
         # Sort the filtered data based on the second element
         sorted_data = max(filtered_data, key=lambda value_meta: value_meta.timestamp)
@@ -42,8 +49,13 @@ class FirstUpdateStrategy(ValueUpdateStrategy):
         # Filter out tuples with None as the second element and convert
         filtered_data = [ValueTimestamp(
             value=value_meta.value,
-            timestamp=value_meta.timestamp.timestamp() if isinstance(value_meta.timestamp, datetime) else value_meta.timestamp)
+            timestamp=value_meta.timestamp.timestamp() if isinstance(value_meta.timestamp,
+                                                                     datetime) else value_meta.timestamp)
             for value_meta in self.field_metadata.values if value_meta.timestamp is not None]
+
+        if not filtered_data:
+            # If all values are empty return None Value
+            return ValueTimestamp(value=None)
 
         # Sort the filtered data based on the second element
         sorted_data = min(filtered_data, key=lambda value_meta: value_meta.timestamp)

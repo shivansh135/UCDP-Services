@@ -22,7 +22,7 @@ from ..request import Request
 from ...exceptions.log_handler import get_logger
 from ...service.decorators.function_memory_cache import async_cache_for
 from ...service.license import License, LICENSE
-from ...service.merging.facade import merge_profile_by_merging_keys
+from ...service.merging.facade_old import merge_profile_by_merging_keys
 from ..event_metadata import EventPayloadMetadata
 from ..event_source import EventSource
 from ..identification_point import IdentificationPoint

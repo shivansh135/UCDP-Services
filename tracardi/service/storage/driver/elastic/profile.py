@@ -1,3 +1,4 @@
+import asyncio
 from typing import Union, Tuple
 
 from tracardi.domain.profile import *
@@ -33,7 +34,7 @@ async def get_duplicated_profiles_by_field(field):
         yield bucket['key'], bucket['doc_count']
 
 
-def get_profiles_by_field_and_value(field:str, email: str):
+def get_profiles_by_field_and_value(field: str, email: str):
     query = {
         "query": {
             "term": {
@@ -42,6 +43,7 @@ def get_profiles_by_field_and_value(field:str, email: str):
         }
     }
     return storage_manager('profile').scan(query, batch=1000)
+
 
 def load_profiles_for_auto_merge():
     query = {
@@ -52,6 +54,7 @@ def load_profiles_for_auto_merge():
         }
     }
     return storage_manager('profile').scan(query, batch=1000)
+
 
 async def load_profile_duplicates(profile_ids: List[str]):
     return await storage_manager('profile').query({
@@ -209,6 +212,7 @@ async def load_modified_top_profiles(size):
         ]
     }
     return await storage_manager('profile').query(query)
+
 
 async def load_by_primary_ids(profile_ids: List[str], size):
     query = {

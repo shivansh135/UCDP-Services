@@ -15,7 +15,7 @@ from tracardi.domain.profile import Profile
 from tracardi.domain.session import Session
 from tracardi.process_engine.rules_engine import RulesEngine
 from tracardi.domain.payload.tracker_payload import TrackerPayload
-from tracardi.service.merging.facade import merge_profile_by_merging_keys, get_merging_keys_and_values
+from tracardi.service.merging.facade_old import merge_profile_by_merging_keys, get_merging_keys_and_values
 from tracardi.service.storage.mysql.service.workflow_trigger_service import WorkflowTriggerService
 from tracardi.service.utils.getters import get_entity_id
 from tracardi.service.wf.domain.flow_response import FlowResponses

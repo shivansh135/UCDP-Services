@@ -1,10 +1,11 @@
 import asyncio
 from dotty_dict import Dotty
 
-from tracardi.service.tracking.storage.profile_storage import save_profile, delete_profile
+from tracardi.service.tracking.storage.profile_storage import save_profile
 
 from tracardi.domain.profile_data import ProfileData
 from .storage.elastic.interface.event import refresh_event_db
+from .storage.elastic.interface.merging import delete_multiple_profiles
 from .storage.elastic.interface.session import refresh_session_db
 
 from ..context import get_context
@@ -48,12 +49,6 @@ async def _move_profile_events_and_sessions(duplicate_profiles: List[Profile], m
             await refresh_event_db()
             await raw_db.update_profile_ids('session', old_profile.id, merged_profile.id)
             await refresh_session_db()
-
-
-async def _delete_profiles(profile_ids: List[Tuple[str, RecordMetadata]]):
-    tasks = [asyncio.create_task(delete_profile(profile_id, metadata.index))
-             for profile_id, metadata in profile_ids]
-    return await asyncio.gather(*tasks)
 
 
 class ProfileMerger:
@@ -356,7 +351,7 @@ class ProfileMerger:
             logger.debug(f"Profiles to delete {records_to_delete}.",
                          extra=ExtraInfo.build(origin="merging", object=self))
 
-            await _delete_profiles(records_to_delete)
+            await delete_multiple_profiles(records_to_delete)
 
             # Replace current profile with merged profile
             return merged_profile

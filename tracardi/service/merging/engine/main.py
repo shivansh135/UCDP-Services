@@ -4,6 +4,7 @@ from datetime import datetime
 
 import asyncio
 from tracardi.domain.profile import ConsentRevoke, Profile, FlatProfile
+from tracardi.domain.storage_record import RecordMetadata
 from tracardi.service.merging.engine.merger import merge_profiles
 
 
@@ -324,15 +325,18 @@ async def main():
     })
 
     t = time.time()
-    profiles = [profile1, profile2, profile3]
+    profiles = [(profile1, RecordMetadata(id="1", index="idx1")),
+                (profile2, RecordMetadata(id="2", index="idx2")),
+                (profile3, RecordMetadata(id="3", index="idx3"))]
 
-    merged, changed_fields = merge_profiles(profiles)
-    print(merged.to_dict()['consents'])
-    p = Profile(**merged)
-    print(p.consents)
-    print("-----------")
-    # print(changed_fields)
-    print(p.data.job)
+    merged, metadata, changed_fields = merge_profiles(profiles)
+    print(metadata)
+    # print(merged.to_dict()['consents'])
+    # p = Profile(**merged)
+    # print(p.consents)
+    # print("-----------")
+    # # print(changed_fields)
+    # print(p.data.job)
     print(time.time() - t)
 
 

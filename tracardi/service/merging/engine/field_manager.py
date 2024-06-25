@@ -34,6 +34,7 @@ def split_flat_profile_to_data_and_timestamps(profile: FlatProfile) -> Tuple[Fla
         field={field: item[0] for field, item in profile.get('metadata.fields', {}).items()}
     )
 
+
 def index_fields(field_settings, path) -> Dict[str, SystemEntityProperty]:
     return {field.property: field for field in field_settings if field.path == path}
 
@@ -52,7 +53,6 @@ def get_profile_field_settings(indexed_properties_settings: Dict[str, SystemEnti
                                path,
                                skip_values
                                ) -> Generator[SystemEntityProperty, None, None]:
-
     """
     Returns setting for all profile fields, if not set then default setting is returned
     """
@@ -92,7 +92,7 @@ def get_profile_field_settings(indexed_properties_settings: Dict[str, SystemEnti
 
 class ProfileDataSpliter:
 
-    def __init__(self, profiles, indexed_field_settings, default_strategies, path, skip_values):
+    def __init__(self, profiles: List[FlatProfile], indexed_field_settings, default_strategies, path, skip_values):
         self._profiles = profiles
         self._skip_values = skip_values
         self.path = path
@@ -131,7 +131,7 @@ class FieldManager:
     def __init__(self, profiles: List[FlatProfile],
                  merged_profile_field_settings: Set[SystemEntityProperty],
                  profile_id_to_timestamps: Dict[str, ProfileTimestamps],
-                 default_strategies, path="",skip_fields=None):
+                 default_strategies, path="", skip_fields=None):
 
         self.path = path
         self.default_strategies = default_strategies
@@ -141,21 +141,20 @@ class FieldManager:
         self.merged_profile_field_settings = merged_profile_field_settings
         self.profile_id_to_timestamps = profile_id_to_timestamps
 
-
-    def _get_value_timestamps(self, field, profile_id_to_timestamps: Dict[str, ProfileTimestamps]) -> Generator[ProfileValueTimestamp, None, None]:
+    def _get_value_timestamps(self, field, profile_id_to_timestamps: Dict[str, ProfileTimestamps]) -> Generator[
+        ProfileValueTimestamp, None, None]:
         for profile in self._profiles:
             profile_timestamps = profile_id_to_timestamps.get(profile['id'], None)
             if profile_timestamps is None:
                 print("--1", profile['id'], field, profile_id_to_timestamps)
                 exit()
             yield ProfileValueTimestamp(
-                    id=profile.get('id', None),
-                    value=profile.get(field),
-                    timestamp=profile_timestamps.field.get(field, None),
-                    profile_update=profile_timestamps.update,
-                    profile_insert=profile_timestamps.insert
-                )
-
+                id=profile.get('id', None),
+                value=profile.get(field),
+                timestamp=profile_timestamps.field.get(field, None),
+                profile_update=profile_timestamps.update,
+                profile_insert=profile_timestamps.insert
+            )
 
     def get_profiles_metadata(self) -> ProfileMetaData:
 
@@ -178,7 +177,6 @@ class FieldManager:
             default_strategies=self.default_strategies
         )
 
-
     def merge(self, path) -> Tuple[FlatProfile, dict]:
         merged_profile = FlatProfile({})
         changed_fields = {}
@@ -194,7 +192,6 @@ class FieldManager:
             else:
                 changed_fields[field_meta.field] = [timestamp, 'merge']
 
-
         if path:
             return merged_profile.get(path, {}), changed_fields
-        return  merged_profile, changed_fields
+        return merged_profile, changed_fields

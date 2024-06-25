@@ -5,7 +5,7 @@ from tracardi.exceptions.exception import BlockedException
 from tracardi.service.cache.event_source import load_event_source
 from tracardi.service.change_monitoring.field_change_logger import FieldChangeLogger
 from tracardi.service.license import License
-from tracardi.service.merging.facade import merge_profile_by_merging_keys
+from tracardi.service.merging.facade_old import merge_profile_by_merging_keys
 from tracardi.service.tracking.storage.profile_storage import load_profile
 from tracardi.service.utils.date import now_in_utc
 from tracardi.domain.entity import Entity

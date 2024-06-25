@@ -15,6 +15,7 @@ from tracardi.service.setup.mappings.objects.profile import default_profile_prop
 MergedValue = namedtuple('MergedValue', ['value', 'timestamp', 'strategy_id', "changed_fields"])
 TimestampTuple = namedtuple('TimestampTuple', ['id', 'fields', 'insert', 'update'])
 
+
 def to_profile_timestamps(data: List[ValueTimestamp]):
     from tracardi.service.merging.engine.field_manager import ProfileTimestamps
     return ProfileTimestamps(
@@ -39,12 +40,12 @@ def get_field_settings(profiles: List[Dotty], indexed_custom_profile_field_setti
             set_of_field_settings.add(field_setting)
     return set_of_field_settings
 
+
 class DictStrategy:
 
     def __init__(self, profiles: List[Dotty], field_metadata: 'FieldMetaData'):
         self.profiles = profiles
         self.field_metadata = field_metadata
-
 
     def prerequisites(self) -> bool:
         for value_meta in self.field_metadata.values:  # List[FieldRef]
@@ -59,13 +60,11 @@ class DictStrategy:
         from tracardi.service.merging.engine.field_manager import ProfileTimestamps
         from tracardi.service.merging.engine.field_manager import FieldManager, index_fields
 
-        print('---------', self.field_metadata.field)
-
         # Get time changes from profiles for nested fields only
 
         profile_timestamps_by_id: Dict[str, ProfileTimestamps] = {profile['id']:
             ProfileTimestamps(
-                field={field: timestamp[0] for field,timestamp in profile['metadata']['fields'].items()},
+                field={field: timestamp[0] for field, timestamp in profile['metadata']['fields'].items()},
                 insert=profile['metadata']['time']['insert'],
                 update=profile['metadata']['time']['update'])
             for profile in self.profiles}
@@ -76,11 +75,13 @@ class DictStrategy:
         indexed_custom_profile_field_settings = index_fields(default_profile_properties, path)
 
         nested_profiles = [Dotty({
-                    "id": value_meta.id,
-                    self.field_metadata.field: value_meta.value
-                }) for value_meta in self.field_metadata.values]
+            "id": value_meta.id,
+            self.field_metadata.field: value_meta.value
+        }) for value_meta in self.field_metadata.values]
 
-        set_of_field_settings: Set[SystemEntityProperty] = get_field_settings(nested_profiles, indexed_custom_profile_field_settings, path)
+        set_of_field_settings: Set[SystemEntityProperty] = get_field_settings(nested_profiles,
+                                                                              indexed_custom_profile_field_settings,
+                                                                              path)
 
         # print(self.field_metadata.field)
         # print(self.field_metadata.field_values())
@@ -96,8 +97,6 @@ class DictStrategy:
 
         result, changed_fields = fm.merge(path)
 
-        print(result)
-        print('-----END')
         return result, changed_fields
 
     # def merge(self):
@@ -112,7 +111,6 @@ class FieldMetaData(BaseModel):
     strategies: List[str] = []
     nested: Optional[bool] = False
 
-
     def __hash__(self):
         return hash(f"{self.path}.{self.field}")
 
@@ -121,7 +119,6 @@ class FieldMetaData(BaseModel):
         if not strategy.prerequisites():
             raise AssertionError("Strategy prerequisites not met.")
         return strategy.merge()
-
 
     def _merge(self, profiles: List[Dotty], strategies: List[str]) -> MergedValue:
         for strategy_id in strategies:
@@ -149,18 +146,14 @@ class FieldMetaData(BaseModel):
                     continue
 
         values = [(v.value, v.timestamp) for v in self.values]
-        raise ValueError(f"Could not merge field '{self.field}', No merging strategy qualified for value merging. Field values {values}")
-
-
+        raise ValueError(
+            f"Could not merge field '{self.field}', No merging strategy qualified for value merging. Field values {values}")
 
     def merge(self, profiles: List[Dotty], default_strategies: List[str]) -> MergedValue:
         try:
             return self._merge(profiles, self.strategies)
         except ValueError:
-            print("Falling to default strategies", default_strategies)
             return self._merge(profiles, default_strategies)
-
 
     def field_values(self):
         return [value.value for value in self.values]
-
