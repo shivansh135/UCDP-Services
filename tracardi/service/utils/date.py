@@ -3,7 +3,7 @@ from zoneinfo import ZoneInfo
 from datetime import datetime, timedelta
 
 
-def now_in_utc(delay=None):
+def now_in_utc(delay=None) -> datetime:
 
     now = datetime.utcnow().replace(tzinfo=ZoneInfo('UTC'))
 
