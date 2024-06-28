@@ -103,6 +103,12 @@ async def _compute(source,
     return profile, session, events, tracker_payload
 
 
+def _has_google_bot_header(request: dict) -> bool:
+    try:
+        return request['headers']['from'] == 'googlebot(at)googlebot.com'
+    except KeyError:
+        return False
+
 async def compute_data(
         profile: Profile,
         session: Optional[Session],
@@ -132,7 +138,7 @@ async def compute_data(
         session = update_session_utm_with_client_data(tracker_payload, session)
 
         # If agent is a bot stop
-        if session.app.bot and tracardi.disallow_bot_traffic:
+        if (session.app.bot or _has_google_bot_header(tracker_payload.request)) and tracardi.disallow_bot_traffic:
             raise BlockedException(f"Traffic from bot is not allowed.")
 
     profile, session, events, tracker_payload = await _compute(
