@@ -1,7 +1,7 @@
 # Running worker docker
 
 ```
-docker run -e REDIS_HOST=redis://<redis-ip>:6379 -d tracardi/worker:0.9.0
+docker run -e REDIS_HOST=redis://<redis-ip>:6379 -d tracardi/worker:1.0.0
 ```
 
 REDIS_HOST=192.168.1.110 ELASTIC_VERIFY_CERTS=no ELASTIC_HOST=http://192.168.1.110:9200 celery -A tracardi.worker.celery_worker worker -l info -E
@@ -20,5 +20,5 @@ docker run \
 -e REDIS_HOST=redis://192.168.1.110:6379 \
 -e MYSQL_DATABASE_URI=mysql+aiomysql://root:root@192.168.1.110/ \
 -e LOGGING_LEVEL=info \
-tracardi/worker:0.9.0
+tracardi/worker:1.0.0
 ```
