@@ -78,6 +78,7 @@ def map_to_plugin_table(plugin: FlowActionPlugin) -> PluginTable:
         settings_hidden=plugin.settings.hidden if plugin.settings else False
     )
 
+
 def map_to_spec(table: PluginTable) -> Spec:
     return Spec(
         className=table.plugin_spec_class_name,
@@ -112,7 +113,6 @@ def map_to_spec(table: PluginTable) -> Spec:
 
 
 def map_to_plugin_metadata(table: PluginTable) -> MetaData:
-
     docs = to_model(table.plugin_metadata_documentation, Documentation)
 
     return MetaData(
@@ -135,6 +135,7 @@ def map_to_plugin_metadata(table: PluginTable) -> MetaData:
         purpose=split_list(table.plugin_metadata_purpose)
     )
 
+
 def map_to_plugin(table: PluginTable) -> Plugin:
     return Plugin(
         start=table.plugin_start,
@@ -142,6 +143,7 @@ def map_to_plugin(table: PluginTable) -> Plugin:
         spec=map_to_spec(table),
         metadata=map_to_plugin_metadata(table),
     )
+
 
 def map_to_flow_action_plugin(table: PluginTable) -> FlowActionPlugin:
     return FlowActionPlugin(
