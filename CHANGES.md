@@ -5,6 +5,9 @@ Version: 1.0.0
 * New APM 
 * News feed
 * Bug fixes
+* Fully compatible with 0.9.0
+* WIth this version we will start using semantic version version 2
+* New manual and documentation
 
 Version: 0.9.0
 ----------------------------------------------------------

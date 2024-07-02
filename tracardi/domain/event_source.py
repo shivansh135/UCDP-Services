@@ -36,6 +36,9 @@ class EventSource(NamedEntityInContext):
         return bool(set(self.type).intersection(set(allowed_types)))
 
     def has_restricted_domain(self) -> bool:
+        if isinstance(self.config, dict):
+            return False
+
         if 'restrict_to' not in self.config or 'restriction' not in self.config:
             return False
 
