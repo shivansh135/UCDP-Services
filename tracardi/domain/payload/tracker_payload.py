@@ -255,6 +255,11 @@ class TrackerPayload(BaseModel):
         except KeyError:
             return None
 
+    def add_context_to_events(self, context: dict):
+        if isinstance(context, dict) and context:
+            for event in self.events:
+                event.context.update(context)
+
     def get_ip(self) -> Optional[str]:
         return Request(self.request).get_ip()
 
@@ -378,6 +383,10 @@ class TrackerPayload(BaseModel):
     def get_tracardi_data_referer(self) -> dict:
 
         try:
+            # Referred ids are passed in context.tracardi.pass = {
+            #    profile: profile,
+            #    source: source
+            # }
             return self.context['tracardi']['pass']
         except (KeyError, TypeError):
             return {}
