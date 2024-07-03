@@ -38,7 +38,6 @@ from ...service.utils.getters import get_entity_id
 
 if License.has_service(LICENSE):
     from com_tracardi.bridge.bridges import javascript_bridge
-    from com_tracardi.service.browser_fingerprinting import BrowserFingerPrint
 
 logger = get_logger(__name__)
 
@@ -221,11 +220,17 @@ class TrackerPayload(BaseModel):
             "saveEvents": not flag
         })
 
+    def get_browser_agent_from_header(self) -> Optional[str]:
+        try:
+            return self.request['headers']['user-agent']
+        except KeyError:
+            return None
+
     def get_browser_agent(self) -> Optional[str]:
         try:
             return self.context['browser']['local']['browser']['userAgent']
         except KeyError:
-            return None
+            return self.get_browser_agent_from_header()
 
     def get_browser_language(self) -> Optional[str]:
         try:
@@ -344,6 +349,9 @@ class TrackerPayload(BaseModel):
         if self.profile is None:
             return True
         return self.profile.id != refer_profile_id.strip()
+
+    def is_cde(self) -> bool:
+        return self.get_referer_data('source') is not None and self.has_referred_profile()
 
     @async_cache_for(30, use_context=True)
     async def list_identification_points(self):
@@ -513,6 +521,7 @@ class TrackerPayload(BaseModel):
 
         return profile, session
 
+
     async def get_profile_and_session(
             self,
             session: Session,
@@ -549,45 +558,6 @@ class TrackerPayload(BaseModel):
         assert self.session.id == session.id
         assert self.profile.id == profile.id
         assert session.profile.id == profile.id
-
-        # TODO Redo Fingerprinting.
-
-        if self.finger_printing_enabled():
-            ttl = 15 * 60
-            device_finger_print = BrowserFingerPrint.get_browser_fingerprint(self)
-            if self.source.config:
-                ttl = int(self.source.config.get('device_fingerprint_ttl', 15 * 60))
-            fp = BrowserFingerPrint(device_finger_print, timedelta(seconds=ttl))
-            fp_profile_id = fp.get_profile_id_by_device_finger_print()
-
-            # If new profile then check if there is fingerprinted profile
-            if profile.is_new():
-                if profile.id != fp_profile_id:
-
-                    # Load profile with finger printed profile id
-                    copy_of_tracker_payload = TrackerPayload(**self.model_dump())
-                    copy_of_tracker_payload.profile = Entity(id=fp_profile_id)
-
-                    # Loader can mutate the copy_of_tracker_payload and add merging status
-
-                    fp_profile: Optional[Profile] = await load_profile(fp_profile_id)
-
-                    # Reassign events that can be mutated
-                    self.events = copy_of_tracker_payload.events
-
-                    if fp_profile:
-                        profile = fp_profile
-                    elif self.finger_printing_enabled():
-                        fp.save_browser_finger_print(profile.id)
-
-                    print("Loading profile by FP")
-            else:
-                pass
-                # Todo merge with fingerprint as merge key. Do not know if I want to do this.
-
-        # elif self.finger_printing_enabled():
-        #     # Does not have fingerprinted profile
-        #     fp.save_browser_finger_print(profile.id)
 
         return profile, session
 
