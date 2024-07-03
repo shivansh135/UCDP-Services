@@ -12,6 +12,7 @@ from tracardi.service.tracker_config import TrackerConfig
 
 async def tracker_loading(tracker_payload: TrackerPayload,
                           tracker_config: TrackerConfig) -> Tuple[Profile, Optional[Session]]:
+
     # We need profile and session before async
 
     session, tracker_payload = await load_or_create_session(tracker_payload)

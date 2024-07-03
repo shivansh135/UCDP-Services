@@ -45,6 +45,7 @@ async def load_profile_and_session(
         tracker_config: TrackerConfig,
         tracker_payload: TrackerPayload
 ) -> Tuple[Optional[Profile], Optional[Session]]:
+
     # Load profile
     profile_loader = _load_profile_and_deduplicate
 
@@ -76,7 +77,6 @@ async def load_profile_and_session(
     else:
         profile, session = await tracker_payload.get_profile_and_session(
             session,
-            profile_loader,  # Loads from memory if possible
             tracker_payload.profile_less
         )
 

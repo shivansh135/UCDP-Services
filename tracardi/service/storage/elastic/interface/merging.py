@@ -3,16 +3,21 @@ from typing import List, Tuple, Optional, Set
 
 from tracardi.domain.profile import FlatProfile, Profile
 from tracardi.domain.storage_record import RecordMetadata
-from tracardi.service.storage.driver.elastic.profile import load_duplicated_profiles_for_profile
+from tracardi.service.storage.driver.elastic.profile import load_duplicated_profiles_for_profile, \
+    load_duplicated_profiles_with_merge_key
 from tracardi.service.storage.driver.elastic.raw import update_profile_ids
 from tracardi.service.storage.driver.elastic import event as event_db
 from tracardi.service.storage.driver.elastic import session as session_db
 from tracardi.service.tracking.storage.profile_storage import save_profile, delete_profile
 
 
-async def load_duplicated_profiles(profile: Profile) -> List[Tuple[FlatProfile, Optional[RecordMetadata]]]:
-
-    duplicated_profiles = await load_duplicated_profiles_for_profile(profile)
+async def load_duplicated_profiles(profile: Profile, merge_by: Optional[List[Tuple[str, str]]] = None) -> List[Tuple[FlatProfile, Optional[RecordMetadata]]]:
+    if merge_by is None:
+        # merge by ids
+        duplicated_profiles = await load_duplicated_profiles_for_profile(profile)
+    else:
+        # merge by merge keys
+        duplicated_profiles = await load_duplicated_profiles_with_merge_key(merge_by)
 
     return [
         (FlatProfile(profile_record), profile_record.get_meta_data())

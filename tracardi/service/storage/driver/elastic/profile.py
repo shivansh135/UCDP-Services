@@ -1,4 +1,3 @@
-import asyncio
 from typing import Union, Tuple
 
 from tracardi.domain.profile import *
@@ -396,3 +395,10 @@ async def load_duplicated_profiles_for_profile(profile: Profile) -> StorageRecor
         profile_ids = [profile.id]
 
     return await load_profile_duplicates(profile_ids)
+
+
+async def load_duplicated_profiles_with_merge_key(merge_by: List[Tuple[str, str]]) -> StorageRecords:
+    return await storage_manager('profile').load_by_values(
+        merge_by,
+        condition='must',
+        limit=10000)
