@@ -20,8 +20,6 @@ async def tracker_loading(tracker_payload: TrackerPayload,
     # -----------------------------------
     # Profile Loading
 
-    # TODO It can deduplicate profile so it should be in mutex or the process redone
-
     profile, session = await load_profile_and_session(
         session,
         tracker_config,
