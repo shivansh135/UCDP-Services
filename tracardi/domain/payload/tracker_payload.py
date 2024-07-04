@@ -572,10 +572,17 @@ class TrackerPayload(BaseModel):
         profile, session = await self._get_profile(session, static=static)
 
         if session and self.session:
-            assert self.session.id == session.id
+            if self.session.id != session.id:
+                raise AssertionError(
+                    f"Session ID ({self.session.id}) in Tracker Payload does not equal to "
+                    f"loaded session ({session.id}) ")
         if profile and self.profile:
-            assert self.profile.id == profile.id
-            assert session.profile.id == profile.id
+            if self.profile.id != profile.id:
+                raise AssertionError(f"Profile ID ({self.profile.id}) in Tracker Payload does not equal "
+                                     f"to loaded profile ({profile.id}) ")
+            if session.profile.id != profile.id:
+                raise AssertionError(
+                    f"Profile ID in session ({session.profile.id}) does not equal to loaded profile ({profile.id}) ")
 
         return profile, session
 
