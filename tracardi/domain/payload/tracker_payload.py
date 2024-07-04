@@ -476,8 +476,14 @@ class TrackerPayload(BaseModel):
 
         if profile is not None:
 
-            # Update Client ids
+            # Check if the loaded profile has not different ID.
+            # It may happen if profile is loaded by IDS and the Profile ID is different
+
+            # Update Tracker Profile ID
             self.profile.id = profile.id
+
+            # Update Tracker Session Profile ID
+            session.profile.id = profile.id
 
             # Check if there is a conflict in IDS.
             # Session ID exists but do not point to profile ID from tracker payload
