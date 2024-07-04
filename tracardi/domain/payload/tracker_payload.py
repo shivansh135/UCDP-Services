@@ -35,6 +35,7 @@ from ...service.storage.mysql.mapping.identification_point_mapping import map_to
 from ...service.storage.mysql.service.idetification_point_service import IdentificationPointService
 from ...service.tracking.storage.profile_storage import load_profile
 from ...service.utils.getters import get_entity_id
+from ...service.utils.hasher import get_shadow_session_id
 
 if License.has_service(LICENSE):
     from com_tracardi.bridge.bridges import javascript_bridge
@@ -412,7 +413,7 @@ class TrackerPayload(BaseModel):
 
         return session
 
-    def _has_tracker_payload_profile_id(self) -> bool:
+    def has_tracker_payload_profile_id(self) -> bool:
         return self.profile is not None and isinstance(self.profile.id, str) and self.profile.id.strip() != ""
 
     @staticmethod
@@ -471,8 +472,12 @@ class TrackerPayload(BaseModel):
             # Session ID exists but do not point to profile ID from tracker payload
 
             if conflicting_profiles:
+
+                # Force new session ID. Create shadow session
+                shadow_session_id = get_shadow_session_id(session.id)
+
                 # Create new session, to protect old session
-                session = Session.new(profile_id=profile.id)
+                session = Session.new(id=shadow_session_id, profile_id=profile.id)
                 self._fill_session_metadata(session)
 
                 # Update tracker payload
@@ -502,7 +507,7 @@ class TrackerPayload(BaseModel):
 
         # Let's check what was sent
 
-        if self._has_tracker_payload_profile_id():
+        if self.has_tracker_payload_profile_id():
 
             # Tracked Profile ID exists, start loading profile with tracker_payload.profile.id
             # And do the regular fallback

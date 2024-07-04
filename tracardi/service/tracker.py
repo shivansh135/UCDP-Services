@@ -1,5 +1,3 @@
-from uuid import uuid4
-
 from typing import Optional
 
 from tracardi.domain.bridges.configurable_bridges import WebHookBridge, RestApiBridge, ConfigurableBridge
@@ -12,12 +10,9 @@ from tracardi.service.tracker_config import TrackerConfig
 from tracardi.config import tracardi
 from tracardi.domain.event_source import EventSource
 from tracardi.exceptions.log_handler import get_logger
-from tracardi.service.utils.getters import get_entity_id
 
 if License.has_license():
     from com_tracardi.service.tracking.tracker import com_tracker
-    from com_tracardi.service.tracking.cross_domain_event import get_for_cross_domain_event
-    from com_tracardi.service.browser_fingerprinting import BrowserFingerPrint
 else:
     from tracardi.service.tracking.tracker import os_tracker
 
@@ -72,41 +67,6 @@ class Tracker:
 
         # Update tracker source with full event source object
         tracker_payload.source = source
-
-        # Check cross domain events
-
-        if License.has_license():
-
-            # Check CDE
-            if tracker_payload.is_cde():
-
-                tracker_payload = await get_for_cross_domain_event(
-                    tracker_payload,
-                    allowed_bridges=self.tracker_config.allowed_bridges)
-
-            # No CDE, check fingerprinting
-            else:
-
-                # Check if enabled device finger print
-
-                if tracker_payload.finger_printing_enabled():
-                    ttl = 15 * 60
-                    if tracker_payload.source.config:
-                        ttl = int(tracker_payload.source.config.get('device_fingerprint_ttl', ttl))
-
-                    finger_printed_profile_id = await BrowserFingerPrint.get_finger_printed_profile_id(tracker_payload, ttl)
-
-                    if finger_printed_profile_id:
-
-                        if tracker_payload._has_tracker_payload_profile_id():
-
-                            if finger_printed_profile_id != tracker_payload.profile.id:
-                                # Fingerprint and Client ID not equal
-                                # Make fingerprint more important and replace tacker profile id.
-                                tracker_payload.profile.id = finger_printed_profile_id
-
-                                # Force new session ID
-                                tracker_payload.session.id = str(uuid4())
 
         # If there is a configurable bridge get it and set up tracker_payload and tracker_config
 
