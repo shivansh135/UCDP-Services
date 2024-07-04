@@ -418,7 +418,7 @@ class TrackerPayload(BaseModel):
 
     @staticmethod
     def _has_profile_id_in_session(session) -> bool:
-        return session is not None and isinstance(session.profile.id, str) and session.profile.id.strip() != ""
+        return session and session.profile and isinstance(session.profile.id, str) and session.profile.id.strip() != ""
 
     def _load_default_profile(self, session, static: bool) -> Tuple[Profile, Session]:
 
@@ -428,8 +428,16 @@ class TrackerPayload(BaseModel):
         assert profile.operation.new is True
         assert profile.operation.update is True
 
-        self.profile.id = profile.id
-        session.profile.id = profile.id
+        if profile:
+            if not isinstance(self.profile, PrimaryEntity):
+                self.profile = PrimaryEntity(id=profile.id)
+            else:
+                self.profile.id = profile.id
+
+        if not session.profile:
+            session.profile = PrimaryEntity(id=profile.id)
+        else:
+            session.profile.id = profile.id
 
         return profile, session
 
@@ -445,7 +453,10 @@ class TrackerPayload(BaseModel):
 
         if profile is not None:
             # Update client profile ids
-            self.profile.id = profile.id
+            if self.profile:
+                self.profile.id = profile.id
+            else:
+                self.profile = PrimaryEntity(id=profile.id)
 
             return profile, session
 
@@ -560,9 +571,11 @@ class TrackerPayload(BaseModel):
         # Calling self._get_profile(session) revolves inconsistencies such as - missing ids.
         profile, session = await self._get_profile(session, static=static)
 
-        assert self.session.id == session.id
-        assert self.profile.id == profile.id
-        assert session.profile.id == profile.id
+        if session and self.session:
+            assert self.session.id == session.id
+        if profile and self.profile:
+            assert self.profile.id == profile.id
+            assert session.profile.id == profile.id
 
         return profile, session
 
