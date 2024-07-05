@@ -167,7 +167,7 @@ async def test_profile_loading_test_3():
 @pytest.mark.asyncio
 async def test_profile_loading_test_4():
     with ServerContext(Context(production=False)):
-        # Test 4 - This test is loading profile by session id in payload
+        # Test 4 - This test is loading profile by tracker.session.profile.id in payload. tracker.profile.id is None
         #
         # There is no profile ID in tracker payload
         # There is session ID in payload
@@ -211,7 +211,7 @@ async def test_profile_loading_test_5():
         # Expected behaviour: New profile returned, session has new profile
         # Tracker payload has corrected values
 
-        existing_session = Session.new(id='s123', profile_id='not-exists')
+        existing_session = Session.new(id='s123')
 
         tracker_payload = TrackerPayload(
             source=Entity(id="1"),
@@ -230,7 +230,7 @@ async def test_profile_loading_test_5():
         profile, session = await _check_loading(existing_session,
                                                 profile_from_db,
                                                 tracker_payload,
-                                                expected_loads_no=1)
+                                                expected_loads_no=0)
 
         assert profile.is_new()
         assert session.profile.id == profile.id
@@ -242,7 +242,8 @@ async def test_profile_loading_test_5():
 @pytest.mark.asyncio
 async def test_profile_loading_test_6():
     with ServerContext(Context(production=False)):
-        # Test 6 - This test tries to load profile but it does not exists then it fallback to loading via session ID
+        # Test 6 - This test tries to load profile but it does not exists then it fallback to loading via session
+        # ID, and it succeeds
         #
         # There is profile ID in tracker payload but it returns None for profile (profile for this ID does not exist)
         # There is session ID in payload and it has existing profile id.
@@ -298,7 +299,7 @@ async def test_profile_loading_test_7():
         # There is session ID in payload and it has existing profile id.
         #
         # Expected behaviour:
-        # Profile is loaded only once as the session.profile.id and profile.id are equal
+        # Profile is loaded only ONCE as the session.profile.id and profile.id are equal
         # First with id="this-profile-does-not-exist" and it fails
         # Then it fallbacks to session.profile.id id="this-profile-does-not-exist" but it does not load as IDS ARE THE SAME.
         # NEW Profile is created
@@ -339,10 +340,11 @@ async def test_profile_loading_test_7():
 @pytest.mark.asyncio
 async def test_profile_loading_test_8():
     with ServerContext(Context(production=False)):
-        # Test 8 - This test tries to load profile but it does not exists then it fallback to loading via session ID
+        # Test 8 - This test tries to load profile, but it does not exist then it fall-back to loading via session ID
+        # and is also does not exist.
         #
-        # There is profile ID in tracker payload but it returns None for profile (profile for this ID does not exist)
-        # There is session ID in payload and it has existing profile id.
+        # There is profile ID in tracker payload, but it returns None for profile (profile for this ID does not exist)
+        # There is session ID in payload, and it has existing profile id.
         #
         # Expected behaviour:
         # Profile is loaded twice
@@ -429,6 +431,60 @@ async def test_profile_loading_test_9():
         assert profile.is_new()
         assert profile.id != "this-profile-does-not-exist"
         assert session.profile.id == profile.id
+
+        assert tracker_payload.profile.id == profile.id
+        assert tracker_payload.session.id == session.id
+
+
+@pytest.mark.asyncio
+async def test_profile_loading_test_10():
+    with ServerContext(Context(production=False)):
+
+        # Test 10 - This test is fully corrupted:
+        # It loads profile and session both exists. But there is no connection between them.
+        # Session profile ID is not equal to profile ID or IDS.
+        #
+        # There is profile ID in tracker payload
+        # There is session ID in payload it has profile ID that does not exist in loaded profile.ids.
+        #
+        # Scenario
+        # Profile B is loaded. It exists in DB and has ID = "D", IDS=['B']
+        # Session has profile.id = 'A'
+        # There is no match between session and profile.
+        #
+        # Expected behaviour:
+        #
+        # Loaded profile is returned has ID = "D", IDS=['B']
+        # New shadow session generated.
+
+        existing_session = Session.new(id='s123', profile_id="A")
+
+        tracker_payload = TrackerPayload(
+            source=Entity(id="1"),
+            session=DefaultEntity(id='s123'),
+            metadata=EventPayloadMetadata(time=Time()),
+            profile=PrimaryEntity(id="B"),
+            context={},
+            request={},
+            properties={},
+            events=[EventPayload(type="111222", properties={})],
+        )
+
+        # Returned profile
+        loaded_profile_from_db = Profile.new(id="D")
+        loaded_profile_from_db.ids = ['B']
+        loaded_profile_from_db.set_new(False)
+
+        profile, session = await _check_loading(existing_session,
+                                                loaded_profile_from_db,
+                                                tracker_payload,
+                                                expected_loads_no=1)  # Profile was once twice
+
+        assert profile.id == loaded_profile_from_db.id
+        assert 'B' in loaded_profile_from_db.ids
+        assert session.id.startswith('shd-')
+
+        assert not profile.is_new()
 
         assert tracker_payload.profile.id == profile.id
         assert tracker_payload.session.id == session.id

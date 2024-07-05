@@ -424,7 +424,8 @@ class TrackerPayload(BaseModel):
     def _profile_consistency_check(requested_profile_id, profile):
         if profile.id != requested_profile_id and requested_profile_id not in profile.ids:
             raise ValueError(f"Loading of profile failed. Some inconsistent profile loaded. "
-                             f"Requested {requested_profile_id}, got profile {profile.id} with profile.ids={profile.ids}. "
+                             f"Requested profile (ID: {requested_profile_id}), loaded profile (ID: {profile.id} "
+                             f"with profile.ids={profile.ids}). "
                              f"Requested id could not be found in any ID collection.")
 
     def _resolve_conflicts(self, payload_profile_id, payload_session_id, profile, session):
@@ -445,10 +446,13 @@ class TrackerPayload(BaseModel):
             self.session.id = session.id
 
             logger.warning(f"Conflicting data in tracker payload. Session exists but belongs to profile "
-                           f"(profile: {session.profile.id} that has not the same ID as tracker.profile.id "
-                           f"({payload_profile_id}). New session ID ({session.id}) created and returned .",
+                           f"profile (ID: {session.profile.id}) that has not the same ID as requested in payload profile "
+                           f"(ID: {payload_profile_id}). "
+                           f"New session ID ({session.id}) created with attached existing in DB profile "
+                           f"(ID {session.profile.id}).",
                            extra=ExtraInfo.build(origin='profile-loading', profile_id=profile.id)
                            )
+        return session
 
     def _load_default_profile(self, session, static: bool) -> Tuple[Profile, Session]:
 
@@ -532,7 +536,7 @@ class TrackerPayload(BaseModel):
             # Check if there is a conflict in IDS.
             # Session ID exists but do not point to profile ID from tracker payload
 
-            self._resolve_conflicts(requested_profile_id, payload_session_id, profile, session)
+            session = self._resolve_conflicts(requested_profile_id, payload_session_id, profile, session)
 
             return profile, session
 
@@ -605,8 +609,12 @@ class TrackerPayload(BaseModel):
         # Calling self._get_profile(session) revolves inconsistencies such as - missing ids.
         profile, session = await self._get_profile(session, static=static)
 
+        # Check consistency
+
         if session and self.session:
-            if self.session.id != session.id:
+            # Correct session ID are when they are the same or a shadowed session was created when there was a conflict.
+            correct_session = self.session.id == session.id or self.session.id == get_shadow_session_id(session.id)
+            if not correct_session:
                 raise AssertionError(
                     f"Session ID ({self.session.id}) in Tracker Payload does not equal to "
                     f"loaded session ({session.id}) ")
