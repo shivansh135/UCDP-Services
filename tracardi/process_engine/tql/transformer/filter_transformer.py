@@ -80,7 +80,11 @@ class FilterTransformer(TransformerNamespace):
 
     @staticmethod
     def _compare(operation, value1, value2):
-        if operation == '=' or operation == '==':
+        if operation == '=':
+            if isinstance(value1, list) and not isinstance(value2, list):
+                return value2 in value1
+            return value1 == value2
+        elif operation == 'is':
             if isinstance(value1, list) and not isinstance(value2, list):
                 return value2 in value1
             return value1 == value2
@@ -131,6 +135,16 @@ class FilterTransformer(TransformerNamespace):
     def op_field_eq_field(self, args):
         value1, operation, value2 = args
         return self._compare(operation, value1, value2)
+
+    def op_exact_match(self, args):
+        value1, operation, value2 = args
+        return {
+            "term": {
+                value1.field: {
+                    "value": value2
+                }
+            }
+        }
 
     def OP_VALUE_TYPE(self, args):
         return args.value

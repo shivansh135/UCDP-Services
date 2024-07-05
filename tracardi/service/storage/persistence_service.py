@@ -25,9 +25,7 @@ from tracardi.service.storage.elastic_storage import ElasticStorage
 _logger = get_logger(__name__)
 
 
-
 def _timedelta_to_largest_unit(delta: timedelta):
-
     # Constants
     SECONDS_PER_MINUTE = 60
     SECONDS_PER_HOUR = 3600
@@ -48,17 +46,16 @@ def _timedelta_to_largest_unit(delta: timedelta):
     else:
         return int(total_seconds), 's', "%M"
 
-def _interval(start_date: datetime, end_date: datetime):
 
+def _interval(start_date: datetime, end_date: datetime):
     INTERVALS = 30
 
     # Calculate the total difference in minutes to ensure we cover all cases accurately
     total_seconds = (end_date - start_date).total_seconds()
 
-    interval = timedelta(seconds=int(total_seconds/INTERVALS))
+    interval = timedelta(seconds=int(total_seconds / INTERVALS))
 
     return _timedelta_to_largest_unit(interval)
-
 
 
 class SqlSearchQueryParser(metaclass=Singleton):
@@ -82,7 +79,8 @@ class SqlSearchQueryEngine:
         self.sorting_map = {
             'event': [{'metadata.time.insert': 'desc'}],
             'session': [{'metadata.time.insert': 'desc'}],
-            'profile': [{'metadata.time.update': 'desc'}, {'metadata.time.insert': 'desc'}, {'metadata.time.create': 'desc'}],
+            'profile': [{'metadata.time.update': 'desc'}, {'metadata.time.insert': 'desc'},
+                        {'metadata.time.create': 'desc'}],
             'log': [{'date': 'desc'}],
             'entity': [{'metadata.time.insert': 'desc'}],
         }
@@ -201,11 +199,13 @@ class SqlSearchQueryEngine:
             es_query = self._query(query, min_date_time, max_date_time, time_field, sorting, time_zone)
         except LarkError:
             es_query = self._string_query(query, min_date_time, max_date_time, time_field, sorting, time_zone)
-
+        print(es_query)
         try:
             result = await self.persister.filter(es_query)
         except StorageException as e:
-            _logger.warning("Could not filter data using {}. Possible reason - wrong filter query typed by user. Details: {}".format(es_query, str(e)))
+            _logger.warning(
+                "Could not filter data using {}. Possible reason - wrong filter query typed by user. Details: {}".format(
+                    es_query, str(e)))
             return QueryResult(total=0, result=[])
 
         return QueryResult(**result.dict())
@@ -613,7 +613,7 @@ class PersistenceService:
         engine = SqlSearchQueryEngine(self)
         return await engine.histogram(query, group_by)
 
-    async def update_by_query(self, query: dict, conflicts: str = 'abort', wait_for_completion:bool = None):
+    async def update_by_query(self, query: dict, conflicts: str = 'abort', wait_for_completion: bool = None):
         try:
             return await self.storage.update_by_query(
                 query=query,

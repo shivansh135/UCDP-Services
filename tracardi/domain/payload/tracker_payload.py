@@ -613,9 +613,9 @@ class TrackerPayload(BaseModel):
 
         if session and self.session:
             # Correct session ID are when they are the same or a shadowed session was created when there was a conflict.
-            correct_session = self.session.id == session.id or self.session.id == get_shadow_session_id(session.id)
+            correct_session = self.session.id == session.id or session.id == get_shadow_session_id(session.id)
             if not correct_session:
-                raise AssertionError(
+                logger.warning(
                     f"Session ID ({self.session.id}) in Tracker Payload does not equal to "
                     f"loaded session ({session.id}) ")
         if profile and self.profile:

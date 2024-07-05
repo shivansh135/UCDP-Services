@@ -9,6 +9,9 @@ class ElasticFieldCondition:
     def _get_field(field):
         return field.field if isinstance(field, ElasticFieldCondition) else field
 
+    def __repr__(self):
+        return f"ElasticFieldCondition({self.field})"
+
     def __eq__(self, other):
         if isinstance(other, ElasticFieldCondition):
             # This is when two fields are compared (field1=field2)
@@ -35,7 +38,6 @@ class ElasticFieldCondition:
                 }
 
             if isinstance(other, str):
-
                 if other.lower() in ["null", "none", "*"]:
                     return {
                         "bool": {
@@ -50,10 +52,21 @@ class ElasticFieldCondition:
                 query_type = "wildcard" if "*" in other else "term"
 
                 return {
-                    query_type: {
-                        self.field: {
-                            "value": other
-                        }
+                    "bool": {
+                        "should": [
+                            {
+                                "match": {
+                                    self.field: other
+                                }
+                            },
+                            {
+                                query_type: {
+                                    f"{self.field}.keyword": {
+                                        "value": other
+                                    }
+                                }
+                            }
+                        ]
                     }
                 }
 
