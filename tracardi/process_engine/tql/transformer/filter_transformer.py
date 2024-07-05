@@ -138,14 +138,32 @@ class FilterTransformer(TransformerNamespace):
 
     def op_exact_match(self, args):
         value1, operation, value2 = args
+
+        query_type = "wildcard" if "*" in value2 or "?" in value2 else "term"
+
         return {
-            "term": {
+            query_type: {
                 value1.field: {
                     "value": value2
                 }
             }
         }
 
+    def op_fulltext_match(self, args):
+        value1, operation, value2 = args
+        return {
+            "match": {
+                value1.field: value2
+            }
+        }
+
+    def op_in(self, args):
+        value1, operation, value2 = args
+        return {
+            "terms": {
+                value1.field: value2
+            }
+        }
     def OP_VALUE_TYPE(self, args):
         return args.value
 

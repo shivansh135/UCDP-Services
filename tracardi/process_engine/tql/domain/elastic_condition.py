@@ -49,7 +49,7 @@ class ElasticFieldCondition:
                         }
                     }
 
-                query_type = "wildcard" if "*" in other else "term"
+                query_type = "wildcard" if "*" in other or "?" in other else "term"
 
                 return {
                     "bool": {
@@ -57,6 +57,13 @@ class ElasticFieldCondition:
                             {
                                 "match": {
                                     self.field: other
+                                }
+                            },
+                            {
+                                query_type: {
+                                    self.field: {
+                                        "value": other
+                                    }
                                 }
                             },
                             {
@@ -124,14 +131,14 @@ class ElasticFieldCondition:
 
             query_type = "term"
             if isinstance(other, str):
-                query_type = "wildcard" if "*" in other else "term"
+                query_type = "wildcard" if "*" in other or "?" in other else "term"
 
             return {
                 "bool": {
                     "must_not": {
                         query_type: {
                             self.field: {
-                                "value": other.field
+                                "value": other
                             }
                         }
                     }
