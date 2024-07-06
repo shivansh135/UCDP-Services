@@ -152,8 +152,7 @@ async def test_load_or_create_session_with_session_but_on_session_in_db():
         session, payload = await _check_loading(session_from_db, tracker_payload, 1)
 
         assert session.id == 's123'
-        # TODO
-        # assert session.profile is None
+        assert session.profile is None
 
 
 @pytest.mark.asyncio
@@ -162,7 +161,9 @@ async def test_load_or_create_session_profile_conflict():
         # Test 5 - Session and profile in payload.
         # Database loads the session but it has different profile then the one in tracker payload.
         # Conflicting profiles.
-        # Session is generated with new session id and the profile ID from payload is assigned
+        # Expected behaviour:
+        # Conflict resolution must wait until the profile is loaded and checked if the profile in payload
+        # will not be used to load via profile.ids.  That's why the profile id in session and tracker are different.
 
         tracker_payload = TrackerPayload(
             source=Entity(id="1"),
@@ -182,10 +183,8 @@ async def test_load_or_create_session_profile_conflict():
 
         session, payload = await _check_loading(session_from_db, tracker_payload, 1)
 
-        # There should be conflict
-        assert 'session_conflict' in tracker_payload.context
         # New session must be created
-        assert session.id != 's123'
+        assert session.id == 's123'
         # For delivered profile
-        assert session.profile.id == tracker_payload.profile.id
+        assert session.profile.id != tracker_payload.profile.id
 

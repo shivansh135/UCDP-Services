@@ -408,7 +408,7 @@ class TrackerPayload(BaseModel):
         assert (session.operation.new is True)
 
         # Set profile from tracker payload to session
-        if isinstance(self.profile, Entity):
+        if isinstance(self.profile, Entity) and self.profile.id:
             session.profile = Entity(id=self.profile.id)
 
         return session
@@ -506,12 +506,7 @@ class TrackerPayload(BaseModel):
             else:
                 self.profile = PrimaryEntity(id=profile.id)
 
-            # Check if there is a conflict in IDS.
-            # Session ID exists but do not point to profile ID from tracker payload
-
-            no_profiles_conflict = self.session.id in profile.ids or self.session.id == profile.id
-            if not no_profiles_conflict:
-                session.profile.id = profile.id
+            session.profile.id = profile.id  # Assign profile id it could be different then requested_profile_id (it could load form profile.ids)
 
             return profile, session
 

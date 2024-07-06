@@ -34,7 +34,8 @@ async def load_or_create_session(tracker_payload: TrackerPayload) -> Tuple[Sessi
             # Creates session with delivered session id
             session = tracker_payload.create_session()
 
-    # AT THIS POINT session should not be empty and should have profile attached
+    # AT THIS POINT session should not be empty.
+    # Profile may not be attached if new session.
 
     # Consistency checks
 
