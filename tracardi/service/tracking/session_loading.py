@@ -12,6 +12,7 @@ logger = get_logger(__name__)
 
 async def load_or_create_session(tracker_payload: TrackerPayload) -> Tuple[Session, TrackerPayload]:
     session_id = get_entity_id(tracker_payload.session)
+    orig_tracker_payload = tracker_payload.model_dump(mode='json')
 
     if session_id is None or session_id.strip() == "":
 
@@ -45,12 +46,13 @@ async def load_or_create_session(tracker_payload: TrackerPayload) -> Tuple[Sessi
     if tracker_payload.profile and tracker_payload.profile.id and (session.profile is None or not session.profile.id):
         raise AssertionError("No profile connected to session, though defined in tracker payload")
 
+    # TODO Tu konfikt nie jest mozliwy do sprawdzenia (brak profile.ids, profil nie załadowany)
     # Załadowana lub stworzona nowa sesja wskazuje na inny profile ID niz profile ID w tracker payload
     conflicting_profiles = tracker_payload.profile and session.profile.id != tracker_payload.profile.id
     if conflicting_profiles:
         logger.warning(
-            f"A loaded {session.id} or newly created session profile ID ({session.profile.id}) points "
-            f"to a different profile ID {tracker_payload.profile.id} in the tracker payload. ")
+            f"A loaded session (ID: {session.id}) or newly created session profile ID ({session.profile.id}) points "
+            f"to a different profile ID {tracker_payload.profile.id} in the tracker payload. Payload: {orig_tracker_payload}")
         tracker_payload.context.update({
             "session_conflict": {
                 "session_id": session_id,
@@ -58,10 +60,11 @@ async def load_or_create_session(tracker_payload: TrackerPayload) -> Tuple[Sessi
                 "profile_id_in_loaded_session": session.profile.id
             }
         })
-        # Chrońmy te dane i zróbmy noą sesje.
+        # Chrońmy te dane i zróbmy nową sesje.
         session = tracker_payload._fill_session_metadata(
             Session.new(
                 id=get_shadow_session_id(session_id),
                 profile_id=tracker_payload.profile.id))
+        session.set_updated(True)
 
     return session, tracker_payload
