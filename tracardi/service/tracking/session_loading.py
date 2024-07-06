@@ -28,9 +28,11 @@ async def load_or_create_session(tracker_payload: TrackerPayload) -> Tuple[Sessi
             session = tracker_payload.create_session()
 
         # Now we have session and we make sure that is has profile
-        if session.profile is None or not session.profile.id:  # If session profile is none then it is corrupted
-            logger.warning(f"Session {session_id} has no profile and is corrupted.")
-            session = tracker_payload.create_session()
+        if not session.is_new():
+            # Only loaded session must have profile.
+            if session.profile is None or not session.profile.id:  # If session profile is none then it is corrupted
+                logger.warning(f"Session {session_id} has no profile and is corrupted.")
+                session = tracker_payload.create_session()
 
     # AT THIS POINT session should not be empty and should have profile attached
 
