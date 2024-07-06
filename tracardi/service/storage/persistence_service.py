@@ -199,7 +199,7 @@ class SqlSearchQueryEngine:
             es_query = self._query(query, min_date_time, max_date_time, time_field, sorting, time_zone)
         except LarkError:
             es_query = self._string_query(query, min_date_time, max_date_time, time_field, sorting, time_zone)
-        print(es_query)
+
         try:
             result = await self.persister.filter(es_query)
         except StorageException as e:

@@ -428,8 +428,8 @@ class TrackerPayload(BaseModel):
                              f"with profile.ids={profile.ids}). "
                              f"Requested id could not be found in any ID collection.")
 
-    def _resolve_conflicts(self, payload_profile_id, payload_session_id, profile, session):
-        no_profiles_conflict = payload_session_id in profile.ids or payload_session_id == profile.id
+    def _resolve_conflicts(self, requested_profile_id, loaded_session_profile_id, profile, session):
+        no_profiles_conflict = loaded_session_profile_id in profile.ids or loaded_session_profile_id == profile.id
 
         if not no_profiles_conflict:
             # The first attempt to resolve this issue was on the session loading level.
@@ -437,6 +437,15 @@ class TrackerPayload(BaseModel):
 
             # Force new session ID. Create shadow session
             shadow_session_id = get_shadow_session_id(session.id)
+
+            self.context.update({
+                "session_conflict": {
+                    "session_id": session.id,
+                    "shadow_session_id": shadow_session_id,
+                    "profile_in_payload": requested_profile_id,
+                    "profile_id_in_loaded_session": loaded_session_profile_id
+                }
+            })
 
             # Create new session, to protect old session
             session = Session.new(id=shadow_session_id, profile_id=profile.id)
@@ -447,7 +456,7 @@ class TrackerPayload(BaseModel):
 
             logger.warning(f"Conflicting data in tracker payload. Session exists but belongs to profile "
                            f"profile (ID: {session.profile.id}) that has not the same ID as requested in payload profile "
-                           f"(ID: {payload_profile_id}). "
+                           f"(ID: {loaded_session_profile_id}). "
                            f"New session ID ({session.id}) created with attached existing in DB profile "
                            f"(ID {session.profile.id}).",
                            extra=ExtraInfo.build(origin='profile-loading', profile_id=profile.id)
@@ -469,7 +478,7 @@ class TrackerPayload(BaseModel):
                 self.profile.id = profile.id
 
         if not session.profile:
-            session.profile = PrimaryEntity(id=profile.id)
+            session.profile = Entity(id=profile.id)
         else:
             session.profile.id = profile.id
 
@@ -515,7 +524,7 @@ class TrackerPayload(BaseModel):
 
         # We have valid profile definition
         requested_profile_id = get_entity_id(self.profile)
-        payload_session_id = session.profile.id  # Session id delivered in payload
+        loaded_session_profile_id = session.profile.id  # Session id delivered in payload
 
         # ID exists, load profile from storage
         profile: Optional[Profile] = await load_profile(requested_profile_id)
@@ -536,7 +545,7 @@ class TrackerPayload(BaseModel):
             # Check if there is a conflict in IDS.
             # Session ID exists but do not point to profile ID from tracker payload
 
-            session = self._resolve_conflicts(requested_profile_id, payload_session_id, profile, session)
+            session = self._resolve_conflicts(requested_profile_id, loaded_session_profile_id, profile, session)
 
             return profile, session
 

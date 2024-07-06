@@ -50,7 +50,7 @@ async def test_load_or_create_session_all_data():
         )
 
         session_from_db = Session.new(id=session_id)
-        session_from_db.profile = profile
+        session_from_db.profile = Entity(id=profile.id)
 
         # Expecting to load the profile and session as defined in tracker payload
 
