@@ -41,10 +41,6 @@ async def load_or_create_session(tracker_payload: TrackerPayload) -> Tuple[Sessi
     if not session:
         raise AssertionError("No session created.")
 
-    # Profile defined in payload but not in returned session
-    if tracker_payload.profile and tracker_payload.profile.id and (session.profile is None or not session.profile.id):
-        raise AssertionError("No profile in session, though defined in tracker payload")
-
     # # TODO Tu konfikt nie jest mozliwy do sprawdzenia (brak profile.ids, profil nie załadowany)
     # # Załadowana lub stworzona nowa sesja wskazuje na inny profile ID niz profile ID w tracker payload
     # conflicting_profiles = tracker_payload.profile and session.profile.id != tracker_payload.profile.id
