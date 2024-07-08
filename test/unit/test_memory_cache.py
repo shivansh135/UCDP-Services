@@ -91,4 +91,5 @@ def test_must_work_per_context():
         cache['test'] = CacheItem(data='xxx', ttl=5)
         assert 'test' in cache
     with ServerContext(Context(production=False)):
+        print(cache['test'])
         assert 'test' not in cache
