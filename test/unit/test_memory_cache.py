@@ -99,3 +99,4 @@ def test_context_must_work_per_context():
             assert 'test' in cache
         with ServerContext(Context(production=False)):
             assert 'test' not in cache
+
