@@ -53,8 +53,11 @@ class MemoryCache:
 
     @staticmethod
     def _get_contextualized_key(key):
-        context = get_context()
-        return f"{hash(context)}-{key}"
+        try:
+            context = get_context()
+            return f"{hash(context)}-{key}"
+        except ValueError:
+            return key
 
     def __len__(self):
         return len(self.memory_buffer)
@@ -108,7 +111,6 @@ class MemoryCache:
             if value.expired():
                 del self.memory_buffer[key]
 
-
     @staticmethod
     async def save(cache: 'MemoryCache', key, data, ttl):
         if asyncio.iscoroutine(data):
@@ -129,5 +131,3 @@ class MemoryCache:
             await MemoryCache.save(cache, key, data=result, ttl=ttl)
 
         return cache[key].data
-
-
