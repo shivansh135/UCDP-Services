@@ -2,7 +2,7 @@ import elasticsearch
 from lark import LarkError
 from pydantic import BaseModel
 
-import tracardi.service.storage.elastic_storage as storage
+import tracardi.service.storage.elastic.driver.elastic_storage as storage
 from typing import List, Union, Dict
 
 from tracardi.domain.entity import Entity
@@ -20,7 +20,7 @@ from tracardi.domain.time_range_query import DatetimeRangePayload
 from tracardi.exceptions.exception import StorageException
 from tracardi.process_engine.tql.parser import Parser
 from tracardi.process_engine.tql.transformer.filter_transformer import FilterTransformer
-from tracardi.service.storage.elastic_storage import ElasticStorage
+from tracardi.service.storage.elastic.driver.elastic_storage import ElasticStorage
 
 _logger = get_logger(__name__)
 

@@ -7,7 +7,7 @@ from typing import Union, Tuple, Optional
 from tracardi.domain.profile import Profile
 from tracardi.exceptions.log_handler import get_logger
 from tracardi.service.storage.redis.collections import Collection
-from tracardi.service.storage.redis_client import RedisClient
+from tracardi.service.storage.redis.driver.redis_client import RedisClient
 from tracardi.service.tracking.storage.profile_storage import load_profile
 
 logger = get_logger(__name__)

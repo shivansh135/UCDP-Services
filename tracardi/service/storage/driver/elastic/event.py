@@ -1,14 +1,14 @@
 from datetime import datetime
 
-from tracardi.domain.agg_result import AggResult
+from tracardi.service.storage.elastic.driver.agg_result import AggResult
 from tracardi.domain.event import Event
 from tracardi.domain.named_entity import NamedEntity
 
 from tracardi.domain.storage_aggregate_result import StorageAggregateResult
 from tracardi.domain.storage_record import StorageRecords, StorageRecord
 from tracardi.exceptions.log_handler import get_logger
-from tracardi.service.storage.elastic_storage import ElasticFiledSort
-from tracardi.service.storage.factory import storage_manager, StorageForBulk
+from tracardi.service.storage.elastic.driver.elastic_storage import ElasticFiledSort
+from tracardi.service.storage.elastic.driver.factory import storage_manager, StorageForBulk
 from typing import List, Optional, Dict, Tuple, Union, Set
 from tracardi.service.storage.elastic.interface import raw as raw_db
 

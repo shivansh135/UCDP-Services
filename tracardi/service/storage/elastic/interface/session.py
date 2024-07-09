@@ -1,9 +1,10 @@
 from collections import defaultdict
 
-from typing import List, Dict, TypeVar
-from tracardi.context import Context, ServerContext
+from typing import List, Dict, TypeVar, Union, Set
+from tracardi.context import Context, ServerContext, get_context
 from tracardi.domain.session import Session
 from tracardi.service.storage.driver.elastic import session as session_db
+from tracardi.service.tracking.cache.session_cache import save_session_cache
 
 T = TypeVar("T")
 
@@ -35,8 +36,14 @@ async def load_session_from_db(session_id: str):
     return await session_db.load_by_id(session_id)
 
 
-async def save_session_to_db(session: Session):
+async def save_session_to_db(session: Union[Session, List[Session], Set[Session]]):
     await session_db.save(session)
+
+
+async def save_session_to_db_and_cache(session: Union[Session, List[Session], Set[Session]]):
+    context = get_context()
+    save_session_cache(session, context)
+    await save_session_to_db(session)
 
 
 async def load_nth_last_session_for_profile(profile_id: str, offset):

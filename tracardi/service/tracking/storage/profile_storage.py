@@ -3,13 +3,13 @@ from typing import Optional, Union, List, Set
 from tracardi.service.tracking.cache.profile_cache import load_profile_cache, save_profile_cache, delete_profile_cache
 from tracardi.context import Context, get_context
 from tracardi.domain.profile import Profile
-from tracardi.service.storage.driver.elastic import profile as profile_db
+from tracardi.service.storage.elastic.interface import profile as profile_db
+
 
 async def delete_profile(id: str,
                          index: str,
                          context: Optional[Context] = None,
                          cache: bool = True):
-
     if context is None:
         context = get_context()
 
@@ -23,20 +23,19 @@ async def delete_profile(id: str,
 
 async def save_profile(profiles: Union[Profile, List[Profile], Set[Profile]],
                        context: Optional[Context] = None,
-                       refresh: bool=False,
+                       refresh: bool = False,
                        cache: bool = True) -> None:
-
     if context is None:
         context = get_context()
 
-    await profile_db.save(profiles, refresh_after_save=refresh)
+    await profile_db.save_profiles_in_db(profiles, refresh_after_save=refresh)
 
     if cache:
         save_profile_cache(profiles, context)
 
 
-async def load_profile(profile_id: str, context: Optional[Context] = None, fallback_to_db: bool = True) -> Optional[Profile]:
-
+async def load_profile(profile_id: str, context: Optional[Context] = None, fallback_to_db: bool = True) -> Optional[
+    Profile]:
     if context is None:
         context = get_context()
 
@@ -49,26 +48,20 @@ async def load_profile(profile_id: str, context: Optional[Context] = None, fallb
         return None
 
     # This load is acceptable
-    profile_record = await profile_db.load_by_id(profile_id)
-
-    profile = None
-    if profile_record is not None:
-        profile = Profile.create(profile_record)
-
+    profile = await profile_db.load_by_id(profile_id)
     save_profile_cache(profile, context)
 
     return profile
 
 
 async def store_profile(profiles: Union[Profile, List[Profile], Set[Profile]],
-                       context: Optional[Context] = None,
-                       refresh: bool=False,
-                       cache: bool = True) -> None:
-
+                        context: Optional[Context] = None,
+                        refresh: bool = False,
+                        cache: bool = True) -> None:
     if context is None:
         context = get_context()
 
-    await profile_db.save(profiles, refresh_after_save=refresh)
+    await profile_db.save_profiles_in_db(profiles, refresh_after_save=refresh)
 
     if cache:
         save_profile_cache(profiles, context)

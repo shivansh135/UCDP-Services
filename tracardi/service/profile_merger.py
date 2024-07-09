@@ -1,4 +1,3 @@
-import asyncio
 from dotty_dict import Dotty
 
 from tracardi.service.tracking.storage.profile_storage import save_profile
@@ -11,7 +10,7 @@ from .storage.elastic.interface.session import refresh_session_db
 from ..context import get_context
 from ..domain import ExtraInfo
 from ..domain.storage_record import RecordMetadata
-from tracardi.service.storage.driver.elastic import profile as profile_db
+from tracardi.service.storage.elastic.interface import profile as profile_db
 from tracardi.service.storage.elastic.interface import raw as raw_db
 from datetime import datetime
 from typing import Optional, List, Dict, Tuple
