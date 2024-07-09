@@ -12,7 +12,7 @@ from ..context import get_context
 from ..domain import ExtraInfo
 from ..domain.storage_record import RecordMetadata
 from tracardi.service.storage.driver.elastic import profile as profile_db
-from tracardi.service.storage.driver.elastic import raw as raw_db
+from tracardi.service.storage.elastic.interface import raw as raw_db
 from datetime import datetime
 from typing import Optional, List, Dict, Tuple
 from pydantic.v1.utils import deep_update

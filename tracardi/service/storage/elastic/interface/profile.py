@@ -3,7 +3,8 @@ from typing import Union, List, Set
 from tracardi.domain.profile import Profile
 from tracardi.service.storage.driver.elastic import profile as profile_db
 
-async def profile_count_in_db(query:dict=None):
+
+async def profile_count_in_db(query: dict = None) -> dict:
     return await profile_db.count(query)
 
 
@@ -13,3 +14,8 @@ async def save_profiles_in_db(profiles: Union[Profile, List[Profile], Set[Profil
 
 async def load_profile_by_primary_ids(profile_id_batch, batch):
     return await profile_db.load_by_primary_ids(profile_id_batch, size=batch)
+
+
+async def load_modified_top_profiles(size):
+    result = await profile_db.load_modified_top_profiles(size)
+    return result.dict()

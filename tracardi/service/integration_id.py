@@ -3,7 +3,7 @@ from typing import Optional, List
 from tracardi.domain.entity import Entity, PrimaryEntity
 from tracardi.domain.entity_record import EntityRecord, EntityRecordMetadata, EntityRecordTime
 from tracardi.domain.remote_system_integration_id import RemoteSystemIntegrationId
-from tracardi.service.storage.driver.elastic import entity as entity_db
+from tracardi.service.storage.elastic.interface import entity as entity_db
 from tracardi.service.utils.date import now_in_utc
 
 

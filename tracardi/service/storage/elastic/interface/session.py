@@ -7,6 +7,7 @@ from tracardi.service.storage.driver.elastic import session as session_db
 
 T = TypeVar("T")
 
+
 def _split_by_index(entities: List[T]) -> Dict[str, List[T]]:
     entities_by_index = defaultdict(list)
     for entity in entities:
@@ -16,6 +17,7 @@ def _split_by_index(entities: List[T]) -> Dict[str, List[T]]:
             entities_by_index['no-metadata'].append(entity)
 
     return entities_by_index
+
 
 async def store_bulk_session(sessions: List[Session], context: Context):
     with ServerContext(context):
@@ -36,11 +38,13 @@ async def load_session_from_db(session_id: str):
 async def save_session_to_db(session: Session):
     await session_db.save(session)
 
+
 async def load_nth_last_session_for_profile(profile_id: str, offset):
     return await session_db.get_nth_last_session(
-                profile_id=profile_id,
-                n=offset
-            )
+        profile_id=profile_id,
+        n=offset
+    )
+
 
 async def refresh_session_db():
     await session_db.refresh()
@@ -62,5 +66,5 @@ async def count_sessions_in_db():
     return await session_db.count()
 
 
-async def delete_session_from_db(session_id:str, index):
+async def delete_session_from_db(session_id: str, index):
     return await session_db.delete_by_id(session_id, index=index)
