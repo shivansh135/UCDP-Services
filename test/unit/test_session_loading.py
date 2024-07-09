@@ -127,10 +127,12 @@ async def test_load_or_create_session_no_session():
 async def test_load_or_create_session_with_session_but_on_session_in_db():
     with ServerContext(Context(production=False)):
         # Test 4 - Session and profile in payload.
-        # Database loads the session but it does not exist.
-        # Session is generated ID from payload and empty profile
+        # Both the session anf profile does not exist in DB.
+        # Session is generated ID from payload and empty now has ID.
 
-        # TODO poninna miec sessja profile przypiety czy nie. Chyba nie nie wiem czy jest w bazie.
+        # TODO poninna miec sessja profile przypiety czy nie. Chyba nie nie wiem czy jest w bazie.TO wszystko jest
+        # TODO przy ładowaniu sessji. NIe wiem czy session.profile.id jest wykorzystywany do ładowania profily
+        # TODO raczej nie.
 
         tracker_payload = TrackerPayload(
             source=Entity(id="1"),
@@ -152,7 +154,7 @@ async def test_load_or_create_session_with_session_but_on_session_in_db():
         session, payload = await _check_loading(session_from_db, tracker_payload, 1)
 
         assert session.id == 's123'
-        assert session.profile is None
+        assert session.profile.id == 'p123'
 
 
 @pytest.mark.asyncio

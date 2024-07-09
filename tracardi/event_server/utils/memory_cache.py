@@ -4,6 +4,7 @@ from typing import Any, Dict, List
 
 from pydantic import BaseModel
 
+from tracardi.context import get_context
 from tracardi.exceptions.exception import ExpiredException
 
 
@@ -50,10 +51,16 @@ class MemoryCache:
         self.counter = 0
         self.allow_null_values = allow_null_values
 
+    @staticmethod
+    def _get_contextualized_key(key):
+        context = get_context()
+        return f"{hash(context)}-{key}"
+
     def __len__(self):
         return len(self.memory_buffer)
 
     def __contains__(self, key: str):
+        key = self._get_contextualized_key(key)
         if key in self.memory_buffer:
             if self.memory_buffer[key].expired():
                 del self.memory_buffer[key]
@@ -61,9 +68,11 @@ class MemoryCache:
         return key in self.memory_buffer
 
     def is_expired(self, key: str) -> bool:
+        key = self._get_contextualized_key(key)
         return (key in self.memory_buffer and self.memory_buffer[key].expired()) or key not in self.memory_buffer
 
     def __getitem__(self, item: str) -> [CacheItem, None]:
+        item = self._get_contextualized_key(item)
         if item in self.memory_buffer:
             cache_item = self.memory_buffer[item]  # type: CacheItem
             if cache_item.expired():
@@ -73,6 +82,7 @@ class MemoryCache:
         return None
 
     def __setitem__(self, key: str, value: CacheItem):
+        key = self._get_contextualized_key(key)
         if not isinstance(value, CacheItem):
             raise ValueError("MemoryCache item must be CacheItem type.")
         self.memory_buffer[key] = value
@@ -81,6 +91,7 @@ class MemoryCache:
             self.purge()
 
     def __delitem__(self, key):
+        key = self._get_contextualized_key(key)
         if key in self.memory_buffer:
             del self.memory_buffer[key]
 
@@ -96,6 +107,7 @@ class MemoryCache:
         for key, value in self.memory_buffer.copy().items():
             if value.expired():
                 del self.memory_buffer[key]
+
 
     @staticmethod
     async def save(cache: 'MemoryCache', key, data, ttl):
@@ -117,3 +129,5 @@ class MemoryCache:
             await MemoryCache.save(cache, key, data=result, ttl=ttl)
 
         return cache[key].data
+
+

@@ -124,3 +124,8 @@ def test_server_switch_context_async():
         assert ctx.context.user.id == '2'
 
         asyncio.run(main())
+
+
+def test_context_hash():
+    context = Context(production=True)
+    assert hash(context) == hash((context.production, context.tenant))
