@@ -1,3 +1,8 @@
+Version: 1.0.1
+----------------------------------------------------------
+* Refactored Data Access Layer
+
+
 Version: 1.0.0
 ----------------------------------------------------------
 * Versio 1.0.0 doe not require migration from version 0.9.0.x

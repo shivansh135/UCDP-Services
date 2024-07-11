@@ -469,6 +469,31 @@ def get_resource_types() -> List[ResourceSettings]:
             )
         ),
         ResourceSettings(
+            id="kafka",
+            name="Apache Kafka",
+            tags=['kafka', 'pro', 'queue', 'destination'],
+            config={
+                "uri": "amqp://localhost:5672/",
+                "port": "5672",
+                "timeout": "5",
+                "virtual_host": ""
+            },
+            destination=DestinationData(
+                package="com_tracardi.destination.kafka_connector.KafkaConnector",
+                init={
+                    "queue": {
+                        "name": None,
+                        "routing_key": "routing",
+                        "queue_type": "direct",
+                        "compression": None,
+                        "auto_declare": True,
+                        "serializer": "json"
+                    }
+                },
+                pro=True
+            )
+        ),
+        ResourceSettings(
             id= "rabbitmq",
             name= "RabbitMq",
             tags=['rabbitmq', 'pro', 'queue', 'destination'],
