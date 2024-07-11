@@ -469,26 +469,27 @@ def get_resource_types() -> List[ResourceSettings]:
             )
         ),
         ResourceSettings(
-            id="kafka",
+            id="apache-kafka",
             name="Apache Kafka",
+            icon='kafka',
             tags=['kafka', 'pro', 'queue', 'destination'],
             config={
-                "uri": "amqp://localhost:5672/",
-                "port": "5672",
-                "timeout": "5",
-                "virtual_host": ""
+                "bootstrap_servers": 'localhost:port',
+                "security_protocol": "PLAINTEXT",
+                "sasl_mechanism": "PLAIN",
+                "sasl_plain_username": None,
+                "sasl_plain_password": None,
+                "metadata_max_age_ms": 300000,
+                "request_timeout_ms": 40000,
+                "max_batch_size": 16384,
+                "max_request_size": 1048576,
+                "ssl_context": False
             },
             destination=DestinationData(
                 package="com_tracardi.destination.kafka_connector.KafkaConnector",
                 init={
-                    "queue": {
-                        "name": None,
-                        "routing_key": "routing",
-                        "queue_type": "direct",
-                        "compression": None,
-                        "auto_declare": True,
-                        "serializer": "json"
-                    }
+                    "topic": "<topic>",
+                    "serializer": "json"
                 },
                 pro=True
             )
