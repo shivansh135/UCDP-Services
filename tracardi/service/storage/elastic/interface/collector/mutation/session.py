@@ -3,6 +3,7 @@ from collections import defaultdict
 from typing import List, Dict, TypeVar, Union, Set
 from tracardi.context import Context, ServerContext, get_context
 from tracardi.domain.session import Session
+from tracardi.domain.value_object.bulk_insert_result import BulkInsertResult
 from tracardi.service.storage.driver.elastic import session as session_db
 from tracardi.service.tracking.cache.session_cache import save_session_cache
 
@@ -20,22 +21,6 @@ def _split_by_index(entities: List[T]) -> Dict[str, List[T]]:
     return entities_by_index
 
 
-async def store_bulk_session(sessions: List[Session], context: Context):
-    with ServerContext(context):
-        # Group sessions by index and iterate
-        for index, sessions in _split_by_index(sessions).items():
-            # Save sessions in Elastic
-            await session_db.save(sessions)
-
-
-async def save_sessions_in_db(sessions: List[Session]):
-    return await session_db.save_sessions(sessions)
-
-
-async def load_session_from_db(session_id: str):
-    return await session_db.load_by_id(session_id)
-
-
 async def save_session_to_db(session: Union[Session, List[Session], Set[Session]]):
     await session_db.save(session)
 
@@ -46,31 +31,16 @@ async def save_session_to_db_and_cache(session: Union[Session, List[Session], Se
     await save_session_to_db(session)
 
 
-async def load_nth_last_session_for_profile(profile_id: str, offset):
-    return await session_db.get_nth_last_session(
-        profile_id=profile_id,
-        n=offset
-    )
+async def save_sessions_in_db(sessions: List[Session]) -> BulkInsertResult:
+    return await session_db.save_sessions(sessions)
 
 
-async def refresh_session_db():
-    await session_db.refresh()
-
-
-async def flush_session_db():
-    await session_db.flush()
-
-
-async def count_sessions_online_in_db():
-    return await session_db.count_online()
-
-
-async def count_online_sessions_by_location_in_db():
-    return await session_db.count_online_by_location()
-
-
-async def count_sessions_in_db():
-    return await session_db.count()
+async def store_bulk_session(sessions: List[Session], context: Context):
+    with ServerContext(context):
+        # Group sessions by index and iterate
+        for index, sessions in _split_by_index(sessions).items():
+            # Save sessions in Elastic
+            await session_db.save(sessions)
 
 
 async def delete_session_from_db(session_id: str, index):

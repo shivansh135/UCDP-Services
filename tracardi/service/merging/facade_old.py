@@ -2,10 +2,10 @@ from typing import List, Optional
 
 from tracardi.domain.profile import Profile
 from tracardi.service.profile_merger import ProfileMerger
-from tracardi.service.tracking.storage.profile_storage import save_profile
+from tracardi.service.storage.elastic.interface.collector.mutation import profile as mutation_profile_db
 
 from tracardi.service.storage.elastic.interface import profile as profile_db
-from tracardi.domain.storage_record import StorageRecord, RecordMetadata
+from tracardi.domain.storage_record import RecordMetadata
 
 
 async def merge_profile_by_merging_keys(profile: Optional[Profile], merge_by) -> Optional[Profile]:
@@ -43,7 +43,7 @@ async def deduplicate_profile(profile_id: str, profile_ids: List[str] = None) ->
         if first_profile.metadata.system.has_merging_data():
             first_profile.metadata.system.remove_merging_data()
             first_profile.mark_for_update()
-            await save_profile(first_profile, refresh=True)
+            await mutation_profile_db.save_profile(first_profile, refresh=True)
 
         # If 1 then there is no duplication
         return first_profile

@@ -1,26 +1,15 @@
-from typing import Union, List, Set, AsyncGenerator, Any, Optional
+from typing import List, AsyncGenerator, Any, Optional
 
 from tracardi.domain.profile import Profile
 from tracardi.exceptions.log_handler import get_logger
 from tracardi.service.storage.driver.elastic import profile as profile_db
 from tracardi.service.storage.elastic.driver.factory import storage_manager
-from tracardi.service.tracking.cache.profile_cache import save_profile_cache
 
 logger = get_logger(__name__)
 
 
 async def profile_count_in_db(query: dict = None) -> dict:
     return await profile_db.count(query)
-
-
-async def save_profiles_in_db(profiles: Union[Profile, List[Profile], Set[Profile]], refresh_after_save=False):
-    return await profile_db.save(profiles, refresh_after_save)
-
-
-async def save_profile_in_db_and_cache(profile: Profile):
-    save_profile_cache(profile)
-    # Save to database - do not defer
-    await save_profiles_in_db(profile, refresh_after_save=True)
 
 
 async def load_profile_by_primary_ids(profile_id_batch, batch):

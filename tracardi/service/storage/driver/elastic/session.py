@@ -10,7 +10,7 @@ from tracardi.service.storage.elastic.driver.factory import storage_manager
 logger = get_logger(__name__)
 
 
-async def save_sessions(sessions: List[Session]):
+async def save_sessions(sessions: List[Session]) -> BulkInsertResult:
     return await storage_manager("session").upsert(sessions, exclude={"operation": ...})
 
 

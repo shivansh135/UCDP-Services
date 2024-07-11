@@ -32,7 +32,7 @@ from ..profile import Profile
 
 from ...service.storage.mysql.mapping.identification_point_mapping import map_to_identification_point
 from ...service.storage.mysql.service.idetification_point_service import IdentificationPointService
-from ...service.tracking.storage.profile_storage import load_profile
+from tracardi.service.storage.elastic.interface.collector.load.profile import load_profile
 from ...service.utils.getters import get_entity_id
 from ...service.utils.hasher import get_shadow_session_id
 
