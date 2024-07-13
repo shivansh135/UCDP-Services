@@ -216,10 +216,12 @@ class SqlSearchQueryEngine:
             for row in data:
                 # todo timestamp no timezone
                 timestamp = datetime.fromisoformat(row["key_as_string"].replace('Z', '+00:00'))
+                speed = int(row["doc_count"]) / interval
                 yield {
                     "date": "{}".format(timestamp.strftime(format)),
                     'interval': "+{}{}".format(interval, unit),
-                    "count": row["doc_count"]
+                    "count": row["doc_count"],
+                    "speed": f"{speed:.3f}/{unit}"
                 }
 
         def __format_count_by_bucket(data, unit, interval, format):
@@ -234,10 +236,11 @@ class SqlSearchQueryEngine:
                 for number, row in enumerate(bucket['items_over_time']['buckets']):
                     # todo timestamp no timezone
                     timestamp = datetime.fromisoformat(row["key_as_string"].replace('Z', '+00:00'))
-
+                    speed = int(row["doc_count"]) / interval
                     item, result = list_value_at_index(result, number, default_value={
                         "date": "{}".format(timestamp.strftime(format)),
                         'interval': "+{}{}".format(interval, unit),
+                        "speed": f"{speed:.3f}/{unit}"
                     })
 
                     item[bucket_name] = row["doc_count"]
