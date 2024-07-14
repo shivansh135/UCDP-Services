@@ -280,7 +280,12 @@ def get_resource_types() -> List[ResourceSettings]:
                 "api_key": "<api_key>",
                 "measurement_id": "<measurement_id>"
             },
-            manual="ga4_tracker_resource"
+            icon='google',
+            manual="ga4_tracker_resource",
+            destination=DestinationData(
+                package="com_tracardi.destination.ga4_connector.Ga4Connector",
+                init={}
+            )
         ),
         ResourceSettings(
             id="google-cloud-service-account",
