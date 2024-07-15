@@ -5,6 +5,8 @@ def test_parser_between():
     parser = SqlSearchQueryParser()
     q = parser.parse("interests.pricing between 0 and 100")
     assert q == {'range': {'interests.pricing': {'gte': 0, 'lte': 100}}}
+    q = parser.parse("metadata.time.insert between \"now-30d\" and \"now-12d\"")
+    assert q == {'range': {'metadata.time.insert': {'gte': 'now-30d', 'lte': 'now-12d'}}}
 
 def test_parser_equals():
     parser = SqlSearchQueryParser()
@@ -51,3 +53,9 @@ def test_parser_in():
     parser = SqlSearchQueryParser()
     q = parser.parse('traits.other in ["A", "B"]')
     assert q == {'terms': {'traits.other': ['A', 'B']}}
+
+
+def test_date():
+    parser = SqlSearchQueryParser()
+    q = parser.parse('traits.other > now-30d')
+    assert q == {'range': {'traits.other': {'gt': 'now-30d'}}}
