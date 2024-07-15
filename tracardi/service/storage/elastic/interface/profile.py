@@ -1,5 +1,6 @@
 from typing import List, AsyncGenerator, Any, Optional
 
+from tracardi.context import get_context
 from tracardi.domain.profile import Profile
 from tracardi.exceptions.log_handler import get_logger
 from tracardi.service.storage.driver.elastic import profile as profile_db
@@ -89,9 +90,13 @@ async def load_profiles_with_duplicated_ids(log_error=True) -> AsyncGenerator[Pr
         logger.info(f"Found {data['doc_count']} profiles with the same ID='{data['key']}'")
         duplicated_ids.add(data['key'])
 
+    # Now return only one example of duplicated profile, for further merging.
+    # All duplicates will be loaded later.
+
     if duplicated_ids:
-        async for row in profile_db.load_by_ids(list(duplicated_ids), batch=1000):
-            yield row.to_entity(Profile)
+        for duplicated_profile_id in duplicated_ids:
+            profile_record = await profile_db.load_by_id(duplicated_profile_id)
+            yield profile_record.to_entity(Profile)
 
 
 async def load_profile_duplicates(profile_ids: List[str]) -> List[Profile]:
