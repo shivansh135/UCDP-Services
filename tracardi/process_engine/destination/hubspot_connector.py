@@ -120,8 +120,9 @@ class HubSpotConnector(DestinationInterface):
             # Try to update
             await self._update_contact(payload, profile.id, hubspot_id)
 
-    async def dispatch_profile(self, data: dict, profile: Profile, session: Session, changed_fields: List[dict]=None):
+    async def dispatch_profile(self, data: dict, profile: Profile, session: Session, changed_fields: List[dict] = None,
+                               metadata=None):
         await self._dispatch(data, profile)
 
-    async def dispatch_event(self, data: dict, profile: Profile, session: Session, event: Event):
+    async def dispatch_event(self, data: dict, profile: Profile, session: Session, event: Event, metadata=None):
         await self._dispatch(data, profile)
