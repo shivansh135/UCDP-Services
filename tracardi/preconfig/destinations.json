@@ -1,0 +1,39 @@
+{
+  "a018bd27-adcc-4a5e-abe3-dc15d0a445a7": {
+    "id": "a018bd27-adcc-4a5e-abe3-dc15d0a445a7",
+    "name": "dest-preconfig",
+    "production": false,
+    "running": false,
+    "description": "",
+    "destination": {
+      "package": "tracardi.process_engine.destination.http_connector.HttpConnector",
+      "init": {
+        "method": "post",
+        "cookies": {},
+        "headers": {
+          "content-type": "application/json"
+        },
+        "timeout": 30,
+        "ssl_check": true
+      },
+      "form": {},
+      "pro": false
+    },
+    "enabled": true,
+    "tags": [],
+    "mapping": {
+      "mapp": 1
+    },
+    "condition": "",
+    "on_profile_change_only": false,
+    "resource": {
+      "id": "6fc26569-5adc-44c4-9e1e-482a4b6b6dfa"
+    },
+    "event_type": null,
+    "source": {
+      "id": "b69f3b41-be0e-45b2-a063-fd4c802f0ced",
+      "name": "test (rest)"
+    },
+    "locked": true
+  }
+}

@@ -10,6 +10,7 @@ from tracardi.service.notation.dict_traverser import DictTraverser
 from tracardi.service.module_loader import load_callable, import_package
 from tracardi.process_engine.tql.condition import Condition
 from tracardi.service.notation.dot_accessor import DotAccessor
+from tracardi.service.setup.setup_resources import get_resource_types
 
 logger = get_logger(__name__)
 
@@ -70,3 +71,10 @@ async def get_dispatch_destination_and_data(
         reshaped_data = template.reshape(reshape_template=destination.mapping)
 
         yield destination_instance, reshaped_data
+
+
+def get_destination_types():
+    resource_types = get_resource_types()
+    for resource_type in resource_types:
+        if resource_type.destination is not None:
+            yield resource_type.destination.package, resource_type.dict()
