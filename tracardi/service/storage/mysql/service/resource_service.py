@@ -30,10 +30,11 @@ class ResourceService(TableService):
     async def insert(self, resource: Resource):
         return await self._replace(ResourceTable, map_to_resource_table(resource))
 
-    async def load_by_tag(self, tag: str):
+    async def load_enabled_by_tag(self, tag: str):
         where = where_tenant_and_mode_context(
             ResourceTable,
-            sql_functions().find_in_set(tag, ResourceTable.tags) > 0
+            sql_functions().find_in_set(tag, ResourceTable.tags) > 0,
+            ResourceTable.enabled == True
         )
 
         return await self._select_in_deployment_mode(
