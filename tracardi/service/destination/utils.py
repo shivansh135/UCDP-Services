@@ -5,7 +5,7 @@ from tracardi.domain.destination import Destination
 from tracardi.domain.resource import Resource
 from tracardi.process_engine.destination.destination_interface import DestinationInterface
 from tracardi.exceptions.log_handler import get_logger
-from tracardi.service.cache.resource import load_resource
+from tracardi.service.cache.resource import load_resource_via_cache
 from tracardi.service.notation.dict_traverser import DictTraverser
 from tracardi.service.module_loader import load_callable, import_package
 from tracardi.process_engine.tql.condition import Condition
@@ -36,7 +36,7 @@ async def _get_destination_dispatchers(destinations: List[Destination], dot, tem
 
         # Load resource from cache
         try:
-            resource = await load_resource(destination.resource.id)
+            resource = await load_resource_via_cache(destination.resource.id)
 
             if resource.enabled is False:
                 raise ConnectionError(f"Can't connect to disabled resource: {resource.name}.")
