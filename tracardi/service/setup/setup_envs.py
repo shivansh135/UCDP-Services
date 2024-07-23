@@ -4,7 +4,7 @@ from tracardi.service.cluster.config import is_save_logs_on
 from tracardi.service.license import License
 
 if License.has_license():
-    from com_tracardi.service.settings import com_system_settings
+    from com_tracardi.service.settings import com_system_settings, com_cluster_settings
 
 system_settings = [
     SystemSettings(
@@ -515,9 +515,17 @@ async def list_system_envs():
         _cluster_settings.append(SystemSettings(
             label=item["label"],
             value=await item['value'](),
-            desc=item['desc']
+            desc=item['desc'],
+            cluster_wide=True
         ))
 
+    for item in com_cluster_settings:
+        _cluster_settings.append(SystemSettings(
+            label=item["label"],
+            value=await item['value'](),
+            desc=item['desc'],
+            cluster_wide=True
+        ))
     if License.has_license():
         return system_settings + com_system_settings + _cluster_settings
 
