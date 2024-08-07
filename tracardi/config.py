@@ -50,13 +50,12 @@ class MysqlConfig:
         self.mysql_database_uri = self.uri(async_driver=True)
         self.mysql_database_uri_with_db = f"{self.mysql_database_uri}/{self.mysql_database}"
 
-
-    def _get_schema(self, async_driver:bool=True):
+    def _get_schema(self, async_driver: bool = True):
         if async_driver:
             return self.mysql_schema
         return self.mysql_schema_sync
 
-    def uri(self, async_driver:bool=True) -> str:
+    def uri(self, async_driver: bool = True) -> str:
         if self.mysql_username and self.mysql_password:
             _creds = f"{self.mysql_username}:{self.mysql_password}"
         elif self.mysql_username:
@@ -70,6 +69,7 @@ class MysqlConfig:
             uri = f"{self._get_schema(async_driver)}{self.mysql_host}:{self.mysql_port}"
 
         return uri.strip(" /")
+
 
 class StarRocksConfig:
     def __init__(self, env):
@@ -88,13 +88,12 @@ class StarRocksConfig:
         self.starrocks_database_uri = self.uri(async_driver=True)
         self.starrocks_database_uri_with_db = f"{self.starrocks_database_uri}/{self.starrocks_database}"
 
-
-    def _get_schema(self, async_driver:bool=True):
+    def _get_schema(self, async_driver: bool = True):
         if async_driver:
             return self.starrocks_schema
         return self.starrocks_schema_sync
 
-    def uri(self, async_driver:bool=True) -> str:
+    def uri(self, async_driver: bool = True) -> str:
         if self.starrocks_username and self.starrocks_password:
             _creds = f"{self.starrocks_username}:{self.starrocks_password}"
         elif self.starrocks_username:
@@ -108,6 +107,7 @@ class StarRocksConfig:
             uri = f"{self._get_schema(async_driver)}{self.starrocks_host}:{self.starrocks_port}"
 
         return uri.strip(" /")
+
 
 class ElasticConfig:
 
@@ -219,7 +219,7 @@ class TracardiConfig(metaclass=Singleton):
         self.enable_errors_on_response = get_env_as_bool('ENABLE_ERRORS_ON_RESPONSE', 'yes')
         self.enable_field_update_log = get_env_as_bool('ENABLE_FIELD_UPDATE_LOG', 'no')
         self.disallow_bot_traffic = get_env_as_bool('DISALLOW_BOT_TRAFFIC', 'yes')
-        self.keep_profile_in_cache_for = get_env_as_int('KEEP_PROFILE_IN_CACHE_FOR', 60*60)
+        self.keep_profile_in_cache_for = get_env_as_int('KEEP_PROFILE_IN_CACHE_FOR', 60 * 60)
         self.keep_session_in_cache_for = get_env_as_int('KEEP_SESSION_IN_CACHE_FOR', 30 * 60)
 
         self.skip_errors_on_profile_mapping = get_env_as_bool('SKIP_ERRORS_ON_PROFILE_MAPPING', 'no')
@@ -297,7 +297,6 @@ class TracardiConfig(metaclass=Singleton):
     def is_apm_on(self) -> bool:
         return self.apm_on
 
-
     @property
     def config(self) -> YamlConfig:
         if not self._config:
@@ -309,6 +308,7 @@ class TracardiConfig(metaclass=Singleton):
 
     def _unset_secrets(self):
         self.env['INSTALLATION_TOKEN'] = ""
+
 
 class ServerConfig:
     def __init__(self, env):
