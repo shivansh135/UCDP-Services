@@ -227,9 +227,6 @@ class TracardiConfig(metaclass=Singleton):
         # Temporary flag
         self.new_collector = get_env_as_bool('NEW_COLLECTOR', 'yes')
 
-        self.profile_cache_ttl = get_env_as_int('PROFILE_CACHE_TTL', 60)
-        self.session_cache_ttl = get_env_as_int('SESSION_CACHE_TTL', 60)
-
         # Not used now
         self.sync_profile_tracks_max_repeats = get_env_as_int('SYNC_PROFILE_TRACKS_MAX_REPEATS', 10)
         self.sync_profile_tracks_wait = get_env_as_int('SYNC_PROFILE_TRACKS_WAIT', 1)
