@@ -57,6 +57,9 @@ class ElasticSearchFetcher(ActionRunner):
             if 'size' not in query:
                 query["size"] = 20
 
+            if self.config.log:
+                self.console.log(f"Executed query {query}")
+
             if query["size"] > 50:
                 self.console.warning("Fetching more then 50 records may impact the GUI performance.")
 
@@ -93,7 +96,8 @@ def register() -> Plugin:
                     "id": None
                 },
                 "index": None,
-                "query": "{\"query\":{\"match_all\":{}}}"
+                "query": "{\"query\":{\"match_all\":{}}}",
+                "log": False
             },
             manual="elasticsearch_query_action",
             form=Form(
@@ -125,7 +129,13 @@ def register() -> Plugin:
                                 name="Query",
                                 description="Please provide Elasticsearch DSL query.",
                                 component=FormComponent(type="json", props={"label": "DSL query"})
-                            )
+                            ),
+                            FormField(
+                                id="log",
+                                name="Log query",
+                                description="Switch logging query body. Please disable when tests are finished.",
+                                component=FormComponent(type="bool", props={"label": "Log query"})
+                            ),
                         ]
                     )
                 ]
